@@ -1,0 +1,39 @@
+{
+  "agents": {
+    "holden": {
+      "name": "Holden",
+      "universe": "The Expanse",
+      "role": "Lead",
+      "assigned": "2025-07-12",
+      "status": "active"
+    },
+    "naomi": {
+      "name": "Naomi",
+      "universe": "The Expanse",
+      "role": "Frontend Dev",
+      "assigned": "2025-07-12",
+      "status": "active"
+    },
+    "amos": {
+      "name": "Amos",
+      "universe": "The Expanse",
+      "role": "Backend Dev",
+      "assigned": "2025-07-12",
+      "status": "active"
+    },
+    "miller": {
+      "name": "Miller",
+      "universe": "The Expanse",
+      "role": "Game Systems",
+      "assigned": "2025-07-12",
+      "status": "active"
+    },
+    "drummer": {
+      "name": "Drummer",
+      "universe": "The Expanse",
+      "role": "Tester",
+      "assigned": "2025-07-12",
+      "status": "active"
+    }
+  }
+}

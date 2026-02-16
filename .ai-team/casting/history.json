@@ -1,0 +1,23 @@
+{
+  "universe_usage_history": [
+    {
+      "universe": "The Expanse",
+      "date": "2025-07-12",
+      "agents_cast": ["holden", "naomi", "amos", "miller", "drummer"],
+      "reason": "MMOG grand strategy browser game — orchestration + reliability assignment shape"
+    }
+  ],
+  "assignment_cast_snapshots": {
+    "2025-07-12-initial": {
+      "universe": "The Expanse",
+      "agents": {
+        "holden": "Lead",
+        "naomi": "Frontend Dev",
+        "amos": "Backend Dev",
+        "miller": "Game Systems",
+        "drummer": "Tester"
+      },
+      "notes": "Initial cast with 'the twist' — Miller as dedicated Game Systems specialist for separable simulation layer"
+    }
+  }
+}
