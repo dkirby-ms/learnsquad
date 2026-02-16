@@ -1,5 +1,4 @@
 node_modules/
 server/dist/
 server/.env
-
 .copilot/mcp-config.json

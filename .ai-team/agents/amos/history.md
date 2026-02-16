@@ -26,3 +26,13 @@
 📌 PKCE: Using PKCE flow for OAuth security, state stored in-memory (Redis later)
 📌 Auth tokens: HttpOnly cookies (not localStorage) — XSS-safe, browser sends automatically with credentials: 'include'
 📌 Cookie-parser: Added to Express middleware for reading auth_token cookie
+📌 WebSocket: Using `ws` library (not socket.io) — lighter, faster, no fallback overhead
+📌 WS location: server/src/ws/ — server.ts (main), types.ts (messages), rooms.ts (room management), serialization.ts (state encoding)
+📌 WS path: /ws endpoint attached to main HTTP server (not standalone)
+📌 WS message format: JSON with type-discriminated unions — debugging > raw perf for now
+📌 WS message types: ClientMessage (join_room, pause_game, etc.), ServerMessage (game_state_update, tick_complete, etc.)
+📌 Tick broadcast: Delta encoding — only send changed nodes per tick, not full state
+📌 Room architecture: Each room has own GameLoop, broadcasts tick results to connected clients
+📌 Game types: server/src/shared/game-types.ts — copy of src/game/types.ts for server use
+📌 Game loop (server): server/src/shared/game-loop.ts — simplified tick processor, delegates to Miller's systems when available
+📌 Status endpoint: GET /api/game/status — returns client count, room list, total clients

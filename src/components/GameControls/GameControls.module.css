@@ -1,0 +1,214 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #141a26;
+  border-radius: 8px;
+  min-width: 200px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+
+/* Connection Status */
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusIndicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.statusConnected {
+  background: #4ade80;
+  box-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+.statusConnecting {
+  background: #fbbf24;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.statusDisconnected {
+  background: #6b7280;
+}
+
+.statusError {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.statusLabel {
+  font-size: 14px;
+  color: #e8eaed;
+}
+
+.errorText {
+  font-size: 12px;
+  color: #ef4444;
+  padding-left: 18px;
+}
+
+.connectionButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.connectButton,
+.disconnectButton {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.connectButton {
+  background: #3b82f6;
+  color: white;
+}
+
+.connectButton:hover {
+  background: #2563eb;
+}
+
+.disconnectButton {
+  background: #374151;
+  color: #e8eaed;
+}
+
+.disconnectButton:hover {
+  background: #4b5563;
+}
+
+/* Tick Display */
+.tickDisplay {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.tickLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tickValue {
+  font-size: 24px;
+  font-weight: 600;
+  color: #e8eaed;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Play/Pause Buttons */
+.playButton,
+.pauseButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.playButton {
+  background: #22c55e;
+  color: white;
+}
+
+.playButton:hover {
+  background: #16a34a;
+}
+
+.pauseButton {
+  background: #f59e0b;
+  color: white;
+}
+
+.pauseButton:hover {
+  background: #d97706;
+}
+
+.playButton:active,
+.pauseButton:active {
+  transform: scale(0.98);
+}
+
+/* Speed Controls */
+.speedLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.speedButtons {
+  display: flex;
+  gap: 4px;
+}
+
+.speedButton {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speedButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8eaed;
+}
+
+.speedButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.speedActive {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.speedActive:hover:not(:disabled) {
+  background: #2563eb;
+}

@@ -23,3 +23,12 @@
 📌 OAuth endpoints: /api/auth/oauth/login, /api/auth/oauth/me, /api/auth/oauth/logout
 📌 CIAM signup: No separate registration page — CIAM handles sign-up within the OAuth flow
 📌 Social providers: OAuthProvider type supports 'microsoft' | 'google' | 'facebook' for future expansion
+📌 WebSocket hook: src/hooks/useGameSocket.ts manages connection lifecycle, reconnection with exponential backoff
+📌 Game state store: src/store/gameState.ts — simple pub/sub store using useSyncExternalStore for React integration
+📌 Server message types: WorldSnapshot, WorldDelta, Events, TickProcessed, SpeedChanged, Error, Connected
+📌 Client message types: JoinGame, Pause, Resume, SetSpeed, Ping
+📌 WebSocket endpoint: /ws/game with gameId query param (proxied via Vite to localhost:3000)
+📌 Hash-based routing: Using window.location.hash for MVP routing (#/, #/game)
+📌 Game components: GameWorld, GameControls, NodeView, ResourceBar, EventLog in src/components/
+📌 Game page: src/pages/GamePage.tsx with lazy-loaded GameWorld for code splitting
+📌 State hooks: useGameWorld, useEventHistory, useCurrentTick, useIsPaused, useGameSpeed, useGameStatus
