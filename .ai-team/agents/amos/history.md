@@ -39,3 +39,8 @@
 📌 Game types: server/src/shared/game-types.ts — copy of src/game/types.ts for server use
 📌 Game loop (server): server/src/shared/game-loop.ts — simplified tick processor, delegates to Miller's systems when available
 📌 Status endpoint: GET /api/game/status — returns room IDs, total clients, room count (via matchMaker.query)
+
+## Team Updates
+
+📌 Team update (2026-02-16): Colyseus backend implementation complete — ready for frontend integration — decided by Ralph
+📌 Team update (2026-02-16): CIAM OAuth implemented with HttpOnly cookies and separate dev endpoints — decided by Ralph

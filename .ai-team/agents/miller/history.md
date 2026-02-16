@@ -48,3 +48,8 @@
 📌 `DEFAULT_EVENT_CONFIG`: maxEventDepth=10, maxEventsPerTick=1000 (circuit breakers)
 📌 `processTick()` now integrates event queue processing — handlers run after tick calculations
 📌 GameLoop constructor accepts optional EventConfig for customizing event processing limits
+
+## Team Updates
+
+📌 Team update (2026-02-16): Event system architecture with handler registry completed — decided by Ralph
+📌 Team update (2026-02-16): Game simulation engine established — pure, deterministic, separable — decided by Ralph

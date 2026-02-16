@@ -41,3 +41,8 @@
 📌 Colyseus events: Server broadcasts 'events' message for game events (not part of schema); handled via `room.onMessage('events', callback)`
 📌 Colyseus reconnection: Uses `room.reconnectionToken` for seamless reconnect; falls back to fresh join if token invalid
 📌 Colyseus lifecycle: `room.onLeave(code)` handles disconnect; code 1000 = clean, <1000 = abnormal (triggers reconnect)
+
+## Team Updates
+
+📌 Team update (2026-02-16): Colyseus frontend migration complete — aligned with backend message protocol — decided by Ralph
+📌 Team update (2026-02-16): CIAM OAuth frontend architecture established — supports multi-provider extension — decided by Ralph

@@ -42,3 +42,14 @@
 📌 Event determinism: 100-tick parallel simulation comparison plus explicit ordering checks across multiple iterations
 📌 Event edge cases: zero-tick scenarios, invalid node IDs, missing resources, concurrent events on same node, maxSize 0/1
 📌 Event performance baselines: 100 events <50ms, 1000 history appends <100ms, 100-tick loop <200ms
+📌 Colyseus E2E tests: `src/__tests__/colyseus.integration.test.ts` covers Phase 6 multiplayer integration (20 tests)
+📌 Colyseus E2E test structure: Uses @colyseus/sdk v0.17 for proper schema deserialization, not raw WebSocket
+📌 Colyseus test coverage: matchmaking, room join, initial state sync (4 nodes), pause/resume, multiple clients, player count
+📌 Colyseus state sync tests: verify exact node count (4), correct node IDs, correct names, resources, connections
+📌 Colyseus tests require server running: start with `cd server && npm start` before running integration project
+📌 Test helper: `waitForState()` utility for async state condition polling with timeout — pattern for all SDK-based tests
+
+## Team Updates
+
+📌 Team update (2026-02-16): E2E test suite for Colyseus established with SDK-based verification — decided by Ralph
+📌 Team update (2026-02-16): CIAM OAuth test suite migrated — 88 passing, 69 todo, 8 skipped — decided by Ralph
