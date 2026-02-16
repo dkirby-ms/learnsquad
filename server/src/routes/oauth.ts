@@ -116,29 +116,40 @@ router.get('/callback', async (req: Request, res: Response) => {
       provider: 'entra',
     });
 
-    // Redirect to frontend with token
-    res.redirect(`${ENTRA_CONFIG.postLogoutRedirectUri}?token=${gameToken}`);
+    // Set HttpOnly cookie instead of exposing token in URL (XSS protection)
+    res.cookie('auth_token', gameToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    // Redirect to frontend WITHOUT token in URL
+    res.redirect(ENTRA_CONFIG.postLogoutRedirectUri);
   } catch (err) {
     console.error('OAuth callback error:', err);
     res.redirect(`${ENTRA_CONFIG.postLogoutRedirectUri}?error=auth_failed`);
   }
 });
 
-// GET /api/auth/oauth/logout — clear session, redirect to CIAM logout
+// GET /api/auth/oauth/logout — clear cookie, redirect to CIAM logout
 router.get('/logout', (_req: Request, res: Response) => {
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
   res.redirect(getCiamLogoutUrl());
 });
 
-// GET /api/auth/oauth/me — return current user from token
+// GET /api/auth/oauth/me — return current user from HttpOnly cookie
 router.get('/me', (req: Request, res: Response) => {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies?.auth_token;
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!token) {
     res.status(401).json({ error: 'No token provided' });
     return;
   }
-
-  const token = authHeader.substring(7);
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {

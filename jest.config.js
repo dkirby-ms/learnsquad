@@ -26,6 +26,12 @@ module.exports = {
       preset: 'ts-jest',
     },
     {
+      displayName: 'game',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/src/game/__tests__/**/*.test.ts'],
+      preset: 'ts-jest',
+    },
+    {
       displayName: 'frontend',
       testEnvironment: 'jsdom',
       testMatch: ['<rootDir>/src/components/**/*.test.tsx'],

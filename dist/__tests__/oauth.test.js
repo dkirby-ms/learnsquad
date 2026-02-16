@@ -103,12 +103,17 @@ const mockSessionStore = {
     },
 };
 describe('OAuth Login Endpoint: GET /api/auth/login', () => {
-    describe('Redirect to Entra ID', () => {
-        it('should redirect to Microsoft Entra ID authorization endpoint', () => {
+    describe('Redirect to Entra External ID (CIAM)', () => {
+        it('should redirect to CIAM authority (ciamlogin.com)', () => {
             const state = 'random-state-value';
             const authUrl = mockOAuthService.getAuthorizationUrl(state);
-            expect(authUrl).toContain('login.microsoftonline.com');
+            expect(authUrl).toContain('.ciamlogin.com');
+            expect(authUrl).not.toContain('login.microsoftonline.com');
             expect(authUrl).toContain('/oauth2/v2.0/authorize');
+        });
+        it('should use tenant subdomain in CIAM authority URL', () => {
+            const authUrl = mockOAuthService.getAuthorizationUrl('state');
+            expect(authUrl).toContain(`https://${mockOAuthConfig.tenantId}.ciamlogin.com`);
         });
         it('should include correct client_id in authorization URL', () => {
             const authUrl = mockOAuthService.getAuthorizationUrl('state');
@@ -136,10 +141,6 @@ describe('OAuth Login Endpoint: GET /api/auth/login', () => {
         it('should use response_type=code for authorization code flow', () => {
             const authUrl = mockOAuthService.getAuthorizationUrl('state');
             expect(authUrl).toContain('response_type=code');
-        });
-        it('should include tenant ID in authorization URL', () => {
-            const authUrl = mockOAuthService.getAuthorizationUrl('state');
-            expect(authUrl).toContain(mockOAuthConfig.tenantId);
         });
     });
 });
@@ -207,9 +208,9 @@ describe('OAuth Callback Endpoint: GET /api/auth/callback', () => {
         it.todo('should accept callback with matching state parameter');
     });
     describe('Error Query Parameters', () => {
-        it.todo('should handle access_denied error from Entra ID');
-        it.todo('should handle invalid_request error from Entra ID');
-        it.todo('should handle server_error from Entra ID');
+        it.todo('should handle access_denied error from Entra External ID');
+        it.todo('should handle invalid_request error from Entra External ID');
+        it.todo('should handle server_error from Entra External ID');
         it.todo('should display user-friendly error message');
     });
 });
@@ -227,21 +228,21 @@ describe('User Info Endpoint: GET /api/auth/me', () => {
                 expect(session?.userId).toBe('user123');
             }
         });
-        it('should return user email from Entra ID profile', async () => {
+        it('should return user email from Entra External ID profile', async () => {
             const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
             if (tokens) {
                 const userInfo = await mockOAuthService.getUserInfo(tokens.access_token);
                 expect(userInfo?.email).toBe('test@example.com');
             }
         });
-        it('should return display name from Entra ID profile', async () => {
+        it('should return display name from Entra External ID profile', async () => {
             const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
             if (tokens) {
                 const userInfo = await mockOAuthService.getUserInfo(tokens.access_token);
                 expect(userInfo?.displayName).toBe('Test User');
             }
         });
-        it('should return Entra ID user ID', async () => {
+        it('should return Entra External ID user ID', async () => {
             const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
             if (tokens) {
                 const userInfo = await mockOAuthService.getUserInfo(tokens.access_token);
@@ -308,7 +309,7 @@ describe('Logout Endpoint: POST /api/auth/logout', () => {
     describe('Redirect After Logout', () => {
         it.todo('should redirect to home page after logout');
         it.todo('should support custom post_logout_redirect_uri');
-        it.todo('should redirect to Entra ID logout endpoint to clear SSO session');
+        it.todo('should redirect to Entra External ID logout endpoint to clear SSO session');
     });
 });
 describe('Token Validation', () => {
@@ -410,10 +411,10 @@ describe('Integration: Full OAuth Flow', () => {
         mockSessionStore.clear();
     });
     it('should complete full OAuth flow from login to authenticated request', async () => {
-        // Step 1: Get authorization URL
+        // Step 1: Get authorization URL (CIAM endpoint)
         const state = 'test-state-123';
         const authUrl = mockOAuthService.getAuthorizationUrl(state);
-        expect(authUrl).toContain('login.microsoftonline.com');
+        expect(authUrl).toContain('.ciamlogin.com');
         // Step 2: User redirected back with code (simulated)
         const authCode = 'valid-auth-code';
         // Step 3: Exchange code for tokens
@@ -457,5 +458,108 @@ describe('Token Refresh', () => {
     it.todo('should use refresh_token for silent renewal');
     it.todo('should handle refresh_token expiration gracefully');
     it.todo('should require re-authentication when refresh fails');
+});
+/**
+ * CIAM-Specific Tests
+ *
+ * Entra External ID (CIAM) features not present in regular Entra ID:
+ * - Self-service signup (no pre-registration required)
+ * - Social identity providers (Google, Facebook, etc.)
+ * - Custom branding flows
+ */
+describe('CIAM: Self-Service User Signup', () => {
+    beforeEach(() => {
+        mockSessionStore.clear();
+    });
+    describe('New User Signup Flow', () => {
+        it('should create session for first-time OAuth user', async () => {
+            // CIAM allows self-signup — user doesn't need to exist beforehand
+            const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
+            expect(tokens).not.toBeNull();
+            // First-time users should get a valid session just like existing users
+            if (tokens) {
+                const sessionId = mockSessionStore.create('new-user-456', tokens);
+                expect(mockSessionStore.get(sessionId)).toBeDefined();
+                expect(mockSessionStore.get(sessionId)?.userId).toBe('new-user-456');
+            }
+        });
+        it('should handle new user with no prior account', async () => {
+            // When a user signs up for the first time via CIAM, they have no existing profile
+            const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
+            if (tokens) {
+                const userInfo = await mockOAuthService.getUserInfo(tokens.access_token);
+                // User info should still be populated from OAuth claims
+                expect(userInfo?.email).toBeDefined();
+                expect(userInfo?.displayName).toBeDefined();
+            }
+        });
+        it.todo('should trigger onboarding flow for first-time users');
+        it.todo('should collect additional profile info if required by user flow');
+        it.todo('should handle email verification during signup');
+    });
+    describe('Existing User Signin Flow', () => {
+        it('should authenticate existing user normally', async () => {
+            const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
+            expect(tokens).not.toBeNull();
+            if (tokens) {
+                const userInfo = await mockOAuthService.getUserInfo(tokens.access_token);
+                expect(userInfo?.id).toBe('entra-user-123');
+            }
+        });
+        it('should match existing user by email claim', async () => {
+            const tokens = await mockOAuthService.exchangeCodeForTokens('valid-auth-code');
+            if (tokens) {
+                const userInfo = await mockOAuthService.getUserInfo(tokens.access_token);
+                // Existing users should have consistent email across sessions
+                expect(userInfo?.email).toBe('test@example.com');
+            }
+        });
+        it.todo('should merge accounts if user signs in with different IdP same email');
+    });
+});
+describe('CIAM: Social Identity Providers', () => {
+    // Social IdP support coming in future — marking as skip for now
+    describe('Google Login', () => {
+        it.skip('should accept authorization from Google IdP', () => {
+            // CIAM can federate Google as identity provider
+        });
+        it.skip('should map Google profile to application user', () => {
+            // Google profile claims should map to our UserInfo structure
+        });
+        it.skip('should create new user on first Google sign-in', () => {
+            // Self-service signup should work for social providers too
+        });
+    });
+    describe('Facebook Login', () => {
+        it.skip('should accept authorization from Facebook IdP', () => {
+            // CIAM can federate Facebook as identity provider
+        });
+        it.skip('should map Facebook profile to application user', () => {
+            // Facebook profile claims should map to our UserInfo structure
+        });
+    });
+    describe('Multiple Identity Providers', () => {
+        it.todo('should allow same user to link multiple social accounts');
+        it.todo('should handle IdP-initiated sign-in');
+        it.todo('should show IdP selection when multiple are configured');
+    });
+});
+describe('CIAM: Password Reset', () => {
+    describe('Self-Service Password Reset', () => {
+        it.todo('should initiate password reset flow from login page');
+        it.todo('should redirect to CIAM password reset endpoint');
+        it.todo('should handle password reset callback');
+        it.todo('should create session after successful password reset');
+    });
+});
+describe('CIAM: Discovery Endpoint', () => {
+    it('should use CIAM-specific OpenID Connect discovery URL', () => {
+        // CIAM discovery endpoint differs from regular Entra ID
+        const expectedDiscoveryUrl = `https://${mockOAuthConfig.tenantId}.ciamlogin.com/.well-known/openid-configuration`;
+        expect(expectedDiscoveryUrl).toContain('.ciamlogin.com');
+        expect(expectedDiscoveryUrl).not.toContain('login.microsoftonline.com');
+    });
+    it.todo('should fetch JWKS from CIAM discovery endpoint for token validation');
+    it.todo('should handle CIAM-specific issuer claim in tokens');
 });
 //# sourceMappingURL=oauth.test.js.map

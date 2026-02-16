@@ -309,7 +309,13 @@ describe('Login Integration', () => {
 /**
  * OAuth / "Sign in with Microsoft" Tests
  *
- * Contract tests for OAuth UI components.
+ * Contract tests for OAuth UI components using Entra External ID (CIAM).
+ *
+ * Key CIAM UI considerations:
+ * - "Sign in" button handles both signin and self-service signup
+ * - Social provider buttons may appear (Google, Facebook) in future
+ * - No pre-registration required — first-time users are auto-created
+ *
  * Written before implementation — Naomi builds to make these pass.
  */
 // Mock OAuth Login component
@@ -494,6 +500,52 @@ describe('OAuth Integration E2E Scenarios', () => {
         it.todo('should redirect to OAuth login for protected routes when unauthenticated');
         it.todo('should allow access to protected routes when authenticated');
         it.todo('should preserve intended route after OAuth completion');
+    });
+});
+/**
+ * CIAM-Specific UI Tests
+ *
+ * Entra External ID (CIAM) enables features that affect the UI:
+ * - Self-service signup: Single button for both signin AND signup
+ * - Social IdPs: Google, Facebook buttons (future)
+ */
+describe('CIAM: Self-Service Signup UI', () => {
+    describe('First-Time User Experience', () => {
+        it.todo('should redirect to same endpoint for new and returning users');
+        it.todo('should show onboarding prompt after first successful login');
+        it.todo('should allow profile completion after OAuth signup');
+    });
+    describe('Button Behavior', () => {
+        it('"Sign in with Microsoft" handles both signin and signup', () => {
+            // In CIAM, there's no separate "Create account" button
+            // The same button handles both flows — CIAM manages signup internally
+            (0, react_2.render)((0, jsx_runtime_1.jsx)(OAuthLogin, {}));
+            const signInButton = react_2.screen.getByRole('button', { name: /sign in with microsoft/i });
+            expect(signInButton).toBeInTheDocument();
+            // No separate signup button needed for Microsoft IdP
+            expect(react_2.screen.queryByRole('button', { name: /create account/i })).not.toBeInTheDocument();
+        });
+    });
+});
+describe('CIAM: Social Identity Provider UI', () => {
+    // Social IdP buttons coming in future iteration
+    describe('Google Sign-In Button', () => {
+        it.skip('should render "Sign in with Google" button when enabled', () => {
+            // Will add when Google IdP is configured in CIAM
+        });
+        it.skip('should redirect to /api/auth/login?provider=google when clicked', () => {
+            // Provider-specific redirect parameter
+        });
+    });
+    describe('Facebook Sign-In Button', () => {
+        it.skip('should render "Sign in with Facebook" button when enabled', () => {
+            // Will add when Facebook IdP is configured in CIAM
+        });
+    });
+    describe('Multiple IdP Layout', () => {
+        it.todo('should display all enabled IdP buttons');
+        it.todo('should maintain consistent button styling across IdPs');
+        it.todo('should show divider between IdP buttons and email/password form if both exist');
     });
 });
 //# sourceMappingURL=Login.test.js.map

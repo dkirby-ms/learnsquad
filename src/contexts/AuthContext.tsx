@@ -42,14 +42,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const checkAuth = useCallback(async () => {
     try {
-      // Get user info from CIAM session
+      // Token is now in HttpOnly cookie — browser sends it automatically
       const response = await fetch('/api/auth/oauth/me', {
         credentials: 'include',
       });
       
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        setUser(data);
       } else {
         setUser(null);
       }
@@ -74,11 +74,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(async () => {
     try {
-      // CIAM logout endpoint clears session and optionally signs out of Microsoft
-      await fetch('/api/auth/oauth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      // Server clears HttpOnly cookie and redirects to CIAM logout
+      window.location.href = '/api/auth/oauth/logout';
     } finally {
       setUser(null);
     }

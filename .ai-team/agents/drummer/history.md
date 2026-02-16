@@ -22,3 +22,23 @@
 📌 CIAM Migration: Tests updated for Entra External ID. Authority URL now `{tenant}.ciamlogin.com` not `login.microsoftonline.com`
 📌 CIAM test patterns: New user signup flow, existing user signin, social IdPs (Google/Facebook marked as skip), discovery endpoint validation
 📌 CIAM UI implication: Single "Sign in with Microsoft" button handles both signup and signin — no separate registration flow needed
+📌 Game simulation tests: `src/game/__tests__/resources.test.ts` covers Phase 2 resource system (61 tests)
+📌 Resource system test patterns: Pure function tests (no mocks), explicit determinism verification, boundary condition coverage
+📌 Jest config updated with `game` project for `src/game/__tests__/**/*.test.ts` (node environment)
+📌 Test fixtures: `makeNode()`, `makeProducer()`, `makeConsumer()` helpers for clean test setup
+📌 Event testing: Verify events emit at state transitions (depleted, cap reached, produced), NOT on steady states
+📌 Determinism test: 100-tick parallel simulation comparison to catch any non-deterministic behavior
+📌 Connectivity tests: `src/game/__tests__/connectivity.test.ts` covers Phase 3 pathfinding/gateway system (81 tests)
+📌 Connectivity test patterns: `buildWorld()` helper for graph construction, exhaustive A* edge cases (cycles, inactive edges, disconnected components)
+📌 Gateway test coverage: activation cost deduction, cooldown state machine, event emission at state transitions
+📌 Pathfinding determinism: Equal-cost paths verified deterministic across 20 iterations — critical for multiplayer sync
+📌 Performance baseline: 100-node grid pathfinding completes in <100ms
+📌 Event system tests: `src/game/__tests__/events.test.ts` covers Phase 4 event queue processing (86 tests)
+📌 Event queue test patterns: FIFO ordering verification via tracking handlers, chain reaction depth testing, max depth/count circuit breakers
+📌 Handler registry patterns: register/unregister/getHandler tests, verify all default handlers initialized
+📌 Handler purity verification: Each default handler tested to return unchanged world reference and empty events array
+📌 Event history: Chronological storage (oldest first), maxSize pruning, query helpers (by tick range, entity, recent N)
+📌 Game loop integration: processTick collects node events + TickProcessed, processMultipleTicks accumulates across ticks
+📌 Event determinism: 100-tick parallel simulation comparison plus explicit ordering checks across multiple iterations
+📌 Event edge cases: zero-tick scenarios, invalid node IDs, missing resources, concurrent events on same node, maxSize 0/1
+📌 Event performance baselines: 100 events <50ms, 1000 history appends <100ms, 100-tick loop <200ms

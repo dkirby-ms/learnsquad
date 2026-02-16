@@ -10,6 +10,13 @@
         "TRELLO_API_KEY": "${TRELLO_API_KEY}",
         "TRELLO_TOKEN": "${TRELLO_TOKEN}"
       }
+    },
+    "github": {
+      "command": "node",
+      "args": ["path/to/github-mcp.js"],
+      "env": {
+        "GITHUB_TOKEN": "token" 
+      }
     }
   }
 }

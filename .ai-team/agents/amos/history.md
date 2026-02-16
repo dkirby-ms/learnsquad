@@ -24,3 +24,5 @@
 📌 OAuth routes: /oauth/login (redirect), /oauth/callback (token exchange), /oauth/logout, /oauth/me, /oauth/status
 📌 Auth dual-mode: Email/password preserved at /api/auth/*, OAuth at /api/auth/oauth/*
 📌 PKCE: Using PKCE flow for OAuth security, state stored in-memory (Redis later)
+📌 Auth tokens: HttpOnly cookies (not localStorage) — XSS-safe, browser sends automatically with credentials: 'include'
+📌 Cookie-parser: Added to Express middleware for reading auth_token cookie
