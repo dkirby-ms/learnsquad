@@ -26,6 +26,13 @@ module.exports = {
       preset: 'ts-jest',
     },
     {
+      displayName: 'integration',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/src/__tests__/*.integration.test.ts'],
+      preset: 'ts-jest',
+      forceExit: true,
+    },
+    {
       displayName: 'game',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/src/game/__tests__/**/*.test.ts'],
