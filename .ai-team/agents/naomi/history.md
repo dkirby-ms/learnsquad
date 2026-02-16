@@ -16,3 +16,10 @@
 📌 Component structure: src/components/{ComponentName}/{ComponentName}.tsx with CSS modules
 📌 Login endpoint: POST /api/auth/login (Amos building backend)
 📌 Styling approach: CSS modules for component isolation, dark theme (#0a0e17 bg, #141a26 cards)
+📌 Auth pattern: AuthContext (src/contexts/AuthContext.tsx) manages OAuth flow via /api/auth/me endpoint
+📌 OAuth flow: "Sign in with Microsoft" redirects to /api/auth/login, backend handles OAuth, returns to app
+📌 Dev auth fallback: Email/password form available via "Use email instead" toggle, POSTs to /api/auth/login/dev
+📌 Auth provider: Microsoft Entra External Identities (CIAM), not regular Entra ID
+📌 OAuth endpoints: /api/auth/oauth/login, /api/auth/oauth/me, /api/auth/oauth/logout
+📌 CIAM signup: No separate registration page — CIAM handles sign-up within the OAuth flow
+📌 Social providers: OAuthProvider type supports 'microsoft' | 'google' | 'facebook' for future expansion

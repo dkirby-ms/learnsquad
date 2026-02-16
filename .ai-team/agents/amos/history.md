@@ -17,3 +17,10 @@
 📌 Auth middleware: server/src/middleware/auth.ts - requireAuth for protected routes
 📌 User store: In-memory Map for now, PostgreSQL integration comes later
 📌 JWT: 24-hour expiry, numeric seconds (86400) due to jsonwebtoken types
+📌 OAuth: Entra External ID (CIAM) routes at /api/auth/oauth/* using @azure/msal-node
+📌 OAuth config: server/src/config/entra.ts - AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_TENANT_NAME
+📌 CIAM authority: https://{tenant}.ciamlogin.com/{tenant}.onmicrosoft.com (NOT login.microsoftonline.com)
+📌 CIAM vs Entra ID: External Identities is for consumers, regular Entra ID is for employees
+📌 OAuth routes: /oauth/login (redirect), /oauth/callback (token exchange), /oauth/logout, /oauth/me, /oauth/status
+📌 Auth dual-mode: Email/password preserved at /api/auth/*, OAuth at /api/auth/oauth/*
+📌 PKCE: Using PKCE flow for OAuth security, state stored in-memory (Redis later)

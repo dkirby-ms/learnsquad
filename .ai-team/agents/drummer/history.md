@@ -16,3 +16,9 @@
 📌 Security tests included: SQL injection payloads, rate limiting, user enumeration prevention
 📌 Frontend tests use @testing-library/react with user-event for realistic interaction simulation
 📌 Edge cases covered: Unicode in credentials, very long inputs, whitespace handling
+📌 OAuth test contracts established: `src/__tests__/oauth.test.ts` for Entra ID backend, OAuth UI tests added to `Login.test.tsx`
+📌 OAuth tests cover: authorization URL generation, token exchange, session management, token validation, CSRF state, and full flow integration
+📌 Frontend OAuth tests cover: "Sign in with Microsoft" button, authenticated/unauthenticated states, logout flow, loading states
+📌 CIAM Migration: Tests updated for Entra External ID. Authority URL now `{tenant}.ciamlogin.com` not `login.microsoftonline.com`
+📌 CIAM test patterns: New user signup flow, existing user signin, social IdPs (Google/Facebook marked as skip), discovery endpoint validation
+📌 CIAM UI implication: Single "Sign in with Microsoft" button handles both signup and signin — no separate registration flow needed
