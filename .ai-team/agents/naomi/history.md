@@ -12,3 +12,7 @@
 📌 Graphics: 2D with PixiJS for simpler visual style
 📌 UI stack: React for UI chrome, PixiJS for game canvas
 📌 State sync: Colyseus provides real-time state synchronization from server
+📌 Build tooling: Vite for dev server and bundling with React plugin
+📌 Component structure: src/components/{ComponentName}/{ComponentName}.tsx with CSS modules
+📌 Login endpoint: POST /api/auth/login (Amos building backend)
+📌 Styling approach: CSS modules for component isolation, dark theme (#0a0e17 bg, #141a26 cards)
