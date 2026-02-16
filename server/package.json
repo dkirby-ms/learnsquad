@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@azure/msal-node": "^5.0.4",
+    "@colyseus/schema": "^4.0.12",
+    "@colyseus/ws-transport": "^0.17.9",
     "@types/cookie-parser": "^1.4.10",
     "bcrypt": "^5.1.1",
+    "colyseus": "^0.17.8",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

@@ -37,6 +37,9 @@ function UnauthenticatedScreen() {
   );
 }
 
+// Get WebSocket URL from env or default to localhost:3000 in development
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+
 export function GamePage() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
@@ -50,7 +53,7 @@ export function GamePage() {
 
   return (
     <Suspense fallback={<LoadingScreen />}>
-      <GameWorld gameId={user?.id} />
+      <GameWorld gameId={user?.id} wsUrl={WS_URL} />
     </Suspense>
   );
 }

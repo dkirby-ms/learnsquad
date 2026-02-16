@@ -26,13 +26,16 @@
 📌 PKCE: Using PKCE flow for OAuth security, state stored in-memory (Redis later)
 📌 Auth tokens: HttpOnly cookies (not localStorage) — XSS-safe, browser sends automatically with credentials: 'include'
 📌 Cookie-parser: Added to Express middleware for reading auth_token cookie
-📌 WebSocket: Using `ws` library (not socket.io) — lighter, faster, no fallback overhead
-📌 WS location: server/src/ws/ — server.ts (main), types.ts (messages), rooms.ts (room management), serialization.ts (state encoding)
-📌 WS path: /ws endpoint attached to main HTTP server (not standalone)
-📌 WS message format: JSON with type-discriminated unions — debugging > raw perf for now
-📌 WS message types: ClientMessage (join_room, pause_game, etc.), ServerMessage (game_state_update, tick_complete, etc.)
-📌 Tick broadcast: Delta encoding — only send changed nodes per tick, not full state
-📌 Room architecture: Each room has own GameLoop, broadcasts tick results to connected clients
+📌 Colyseus location: server/src/colyseus/ — schema.ts (state), GameRoom.ts (room), converters.ts (GameWorld → Schema)
+📌 Colyseus deps: colyseus@0.17.8, @colyseus/schema@4.0.12, @colyseus/ws-transport@0.17.9
+📌 Colyseus room name: "game" — clients use client.joinOrCreate("game") to connect
+📌 Colyseus state: GameState schema with MapSchema for nodes/connections/players, ArraySchema for events
+📌 Colyseus schema pattern: Mirror game types with @type decorators, use converters to bridge plain objects
+📌 Colyseus Room generic (0.17+): Room<{ state: GameState }> not Room<GameState> — interface changed
+📌 Colyseus onLeave: Use code param (number), check code === 1000 for consented disconnect
+📌 Colyseus matchMaker: Import standalone from 'colyseus', not from Server instance
+📌 tsconfig for Colyseus: experimentalDecorators and emitDecoratorMetadata required
+📌 Old WS code: Archived to server/src/ws-archived/ — kept for reference
 📌 Game types: server/src/shared/game-types.ts — copy of src/game/types.ts for server use
 📌 Game loop (server): server/src/shared/game-loop.ts — simplified tick processor, delegates to Miller's systems when available
-📌 Status endpoint: GET /api/game/status — returns client count, room list, total clients
+📌 Status endpoint: GET /api/game/status — returns room IDs, total clients, room count (via matchMaker.query)

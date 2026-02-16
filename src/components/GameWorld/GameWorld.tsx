@@ -40,10 +40,17 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<EntityId | null>(null);
   const [eventLogCollapsed, setEventLogCollapsed] = useState(false);
 
+  // Debug: log world state on change
+  console.log('[GameWorld] world:', world);
+  console.log('[GameWorld] world?.nodes:', world?.nodes);
+
   // Convert nodes record to sorted array for display
   const nodeList = useMemo(() => {
-    if (!world) return [];
-    return Object.values(world.nodes).sort((a, b) => a.name.localeCompare(b.name));
+    if (!world || !world.nodes) return [];
+    // Filter out any undefined nodes that may occur during sync
+    return Object.values(world.nodes)
+      .filter((node): node is Node => node !== undefined && node !== null && typeof node.name === 'string')
+      .sort((a, b) => a.name.localeCompare(b.name));
   }, [world?.nodes]);
 
   const selectedNode = selectedNodeId && world?.nodes[selectedNodeId];

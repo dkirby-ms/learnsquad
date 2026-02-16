@@ -1,3 +1,7 @@
+// Polyfill Symbol.metadata for @colyseus/schema v4 (TC39 Stage 3 feature not yet in Node.js)
+// @ts-expect-error - Symbol.metadata may not exist in type definitions yet
+Symbol.metadata ??= Symbol('Symbol.metadata');
+
 import dotenv from 'dotenv';
 // Load env vars FIRST, before importing modules that depend on them
 dotenv.config();
@@ -5,57 +9,65 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { createServer } from 'http';
+import config, { listen } from '@colyseus/tools';
+import { matchMaker, Server } from 'colyseus';
 import authRoutes from './routes/auth';
 import oauthRoutes from './routes/oauth';
-import { createWSServer } from './ws';
+import { GameRoom } from './colyseus';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const WS_PATH = process.env.WS_PATH || '/ws';
+const PORT = parseInt(process.env.PORT || '3000', 10);
 const TICK_RATE = parseInt(process.env.TICK_RATE || '1000', 10);
 
-// Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true,
-}));
-app.use(express.json());
-app.use(cookieParser());
+// Colyseus configuration using @colyseus/tools
+const appConfig = config({
+  // Initialize game server with rooms
+  initializeGameServer: (gameServer: Server) => {
+    gameServer.define('game', GameRoom, { tickRate: TICK_RATE });
+  },
+  
+  // Express middleware and routes
+  initializeExpress: (app: express.Application) => {
+    // Middleware
+    app.use(cors({
+      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      credentials: true,
+    }));
+    app.use(express.json());
+    app.use(cookieParser());
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/auth/oauth', oauthRoutes);
+    // Routes
+    app.use('/api/auth', authRoutes);
+    app.use('/api/auth/oauth', oauthRoutes);
 
-// Health check
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
+    // Health check
+    app.get('/health', (_req, res) => {
+      res.json({ status: 'ok' });
+    });
+
+    // Game status endpoint using Colyseus matchmaker
+    app.get('/api/game/status', async (_req, res) => {
+      try {
+        const rooms = await matchMaker.query({ name: 'game' });
+        const totalClients = rooms.reduce((sum: number, room: { clients: number }) => sum + room.clients, 0);
+        res.json({
+          rooms: rooms.map((r: { roomId: string }) => r.roomId),
+          totalClients,
+          roomCount: rooms.length,
+        });
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to query rooms' });
+      }
+    });
+  },
 });
 
-// Create HTTP server for both Express and WebSocket
-const httpServer = createServer(app);
-
-// Initialize WebSocket server attached to HTTP server
-const wsServer = createWSServer({
-  httpServer,
-  path: WS_PATH,
-  tickRate: TICK_RATE,
-});
-
-// Game status endpoint
-app.get('/api/game/status', (_req, res) => {
-  const roomManager = wsServer.getRoomManager();
-  res.json({
-    clients: wsServer.getClientCount(),
-    rooms: roomManager.getRoomIds(),
-    totalClients: roomManager.getTotalClients(),
-  });
-});
-
-httpServer.listen(PORT, () => {
+// Start the server
+listen(appConfig, PORT).then((gameServer) => {
   console.log(`Server running on port ${PORT}`);
-  console.log(`WebSocket server available at ws://localhost:${PORT}${WS_PATH}`);
+  console.log(`Colyseus WebSocket server available at ws://localhost:${PORT}`);
+  console.log(`Matchmaking available at http://localhost:${PORT}/matchmake/`);
+  console.log(`Room type: "game" (use client.joinOrCreate("game") to connect)`);
 });
 
-export { app, wsServer };
-export default app;
+export { appConfig };
+export default appConfig;
