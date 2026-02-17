@@ -2349,3 +2349,16 @@ Clients receive these events via `client.send()`:
 - This applies to all new work starting 2025-01-20
 - Existing uncommitted work should be moved to feature branches
 - One-time setup: configure GitHub branch protection on master/main
+### 2025-01-20: PRs Must Pass Full Build Before Review Approval
+
+**By:** Alex  
+**What:** All PRs must successfully complete `npm run build` (full TypeScript compilation) before approval, not just tests.
+
+**Why:** PR #9 had all tests passing (`npm test` succeeded) but broke the build completely with 27 TypeScript errors. Tests running successfully doesn't mean the code will compile or build correctly. TypeScript type errors can exist even when JavaScript tests pass at runtime.
+
+**Enforcement:** Code reviewers should verify:
+1. `npm test` passes (runtime correctness)
+2. `npm run build` succeeds (compile-time correctness)  
+3. No TypeScript errors in tsc output
+
+This ensures we don't merge code that breaks the build pipeline.

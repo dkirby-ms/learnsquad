@@ -36,3 +36,28 @@
 - Performance considerations
 
 **Workflow:** All changes must go through feature branches → PRs → Alex's review → merge. No exceptions.
+
+### 2025-01-20: PR #9 Review - Build Fixes Rejected
+
+**PR:** #9 "fix: Add TypeScript type declarations and fix test imports" by dkirby-ms  
+**Branch:** squad/build-fixes-and-types → master  
+**Verdict:** REQUEST CHANGES - reassigned to Miller
+
+**Issues Found:**
+- CSS module type declarations added but not properly referenced in tsconfig
+- Vite environment types declared but not applied correctly to import.meta
+- Login test type fixes incomplete - still has TypeScript errors
+- Connectivity test type fixes incomplete - tests pass but tsc fails
+- GamePage changes introduce new errors (import path with .js extension)
+- Build completely broken: 27 TypeScript errors
+
+**Root Cause:** tsconfig.json uses `module: "NodeNext"` and `moduleResolution: "NodeNext"` which is for Node.js ESM, but this is a Vite browser project. The configuration mismatch causes module resolution issues.
+
+**Key Files Reviewed:**
+- src/css-modules.d.ts - CSS module type declarations
+- src/vite-env.d.ts - Vite environment type declarations  
+- src/components/Login/Login.test.tsx - Test type fixes (incomplete)
+- src/game/__tests__/connectivity.test.ts - Resource type completeness (incomplete)
+- src/pages/GamePage.tsx - Import and env access changes (problematic)
+
+**Lesson:** Type declaration files are useless if tsconfig doesn't pick them up. Always run full build (`npm run build`) to verify TypeScript compilation, not just tests.
