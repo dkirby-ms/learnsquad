@@ -10,8 +10,8 @@ How to decide who handles what.
 | Frontend UI, React, PixiJS | Naomi | Components, game canvas, state management |
 | Backend APIs, Colyseus, WebSocket | Amos | Multiplayer rooms, REST endpoints, database |
 | Game simulation, tick processing | Miller | Game loop, simulation engine, rules |
+| Code review | Alex | Review PRs, check quality, security, conventions |
 | Testing, QA, edge cases | Drummer | Unit tests, integration tests, load tests |
-| Code review | Holden | Review PRs, check quality, suggest improvements |
 | Scope & priorities | Holden | What to build next, trade-offs, decisions |
 | Async issue work (bugs, tests, small features) | @copilot 🤖 | Well-defined tasks matching capability profile |
 | Session logging | Scribe | Automatic — never needs routing |

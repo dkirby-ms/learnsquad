@@ -59,3 +59,4 @@
 📌 Team update (2026-02-16): CIAM OAuth test suite migrated — 88 passing, 69 todo, 8 skipped — decided by Ralph
 📌 Team update (2026-02-17): Phase 8 territory tests ready for implementation — decided by Drummer
 📌 Team update (2026-02-18): Phase 8 diplomacy tests complete — 27 tests all passing, pure function system ready for Colyseus integration — decided by Drummer
+📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.

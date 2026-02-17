@@ -16,6 +16,7 @@
 | Naomi | Frontend Dev | `.ai-team/agents/naomi/charter.md` | ✅ Active |
 | Amos | Backend Dev | `.ai-team/agents/amos/charter.md` | ✅ Active |
 | Miller | Game Systems | `.ai-team/agents/miller/charter.md` | ✅ Active |
+| Alex | Code Reviewer | `.ai-team/agents/alex/charter.md` | ✅ Active |
 | Drummer | Tester | `.ai-team/agents/drummer/charter.md` | ✅ Active |
 | Scribe | Session Logger | `.ai-team/agents/scribe/charter.md` | 📋 Silent |
 | Ralph | Work Monitor | — | 🔄 Monitor |

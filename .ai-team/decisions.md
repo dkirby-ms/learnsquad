@@ -2279,3 +2279,73 @@ Clients receive these events via `client.send()`:
 ✅ TypeScript compilation successful  
 ⏳ Frontend integration pending (Naomi)  
 ⏳ Game simulation integration pending (Miller)
+### 2025-01-20: PR-Based Workflow and Code Review Process
+
+**By:** Squad (Coordinator)  
+**Requested by:** dkirby-ms
+
+**What:** Implemented mandatory PR-based workflow with dedicated code reviewer
+
+**Changes:**
+
+1. **No Direct Commits to Master**
+   - All changes MUST go through feature branches
+   - All changes MUST be submitted as pull requests
+   - All PRs MUST be reviewed and approved before merge
+   - No exceptions — even for "quick fixes" or "typos"
+
+2. **Feature Branch Workflow**
+   - Create branch: `feature/{issue-number}-{description}` or `fix/{issue-number}-{description}`
+   - Make changes in the branch
+   - Push branch to remote
+   - Open PR targeting `master` (or `main`)
+   - Wait for review and approval
+   - Merge only after approval
+
+3. **Code Reviewer Role**
+   - **Alex Kamal** is the dedicated code reviewer
+   - All PRs route to Alex for review
+   - Alex checks:
+     - Code quality and maintainability
+     - Correctness and edge cases
+     - Security vulnerabilities
+     - Test coverage and quality
+     - Architecture alignment (especially "The Twist")
+     - Performance considerations
+     - Project conventions adherence
+
+4. **Review Outcomes**
+   - **APPROVE**: PR is ready to merge
+   - **REQUEST CHANGES**: Issues must be fixed before merge
+     - If rejected, original author is locked out (Reviewer Rejection Protocol)
+     - Revision must be done by a different agent or escalated
+   - **COMMENT**: Non-blocking suggestions
+
+5. **Auto-Ceremony Trigger**
+   - Code Review ceremony auto-triggers when PR is opened or updated
+   - Alex facilitates the review
+   - PR author participates to answer questions
+   - Time budget: thorough (quality takes priority)
+
+**Why:**
+
+1. **Quality Gate**: Prevents buggy, insecure, or poorly-written code from reaching master
+2. **Knowledge Sharing**: Reviews spread understanding of changes across the team
+3. **Consistency**: Ensures all code follows project conventions
+4. **Second Pair of Eyes**: Catches issues the original author missed
+5. **Security**: Dedicated security review on every change
+6. **Documentation**: PR descriptions document what changed and why
+7. **Rollback Safety**: Clear history makes it easy to identify and revert problematic changes
+
+**Enforcement:**
+
+- Coordinator (Squad) enforces this workflow
+- All agents MUST create PRs for their work
+- No agent may merge without Alex's approval
+- GitHub branch protection (to be configured) will mechanically enforce this
+
+**Migration Notes:**
+
+- This applies to all new work starting 2025-01-20
+- Existing uncommitted work should be moved to feature branches
+- One-time setup: configure GitHub branch protection on master/main

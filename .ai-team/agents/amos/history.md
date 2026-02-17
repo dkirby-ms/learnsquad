@@ -141,3 +141,4 @@
 **Why:** Enables multiplayer diplomacy with bilateral agreements. Server-authoritative design prevents cheating. Pending offers tracked separately from state, allowing clean rejection/timeout handling. Colyseus auto-syncs diplomacy schema changes to all clients.
 
 **Status:** Build passes. Ready for frontend integration (Naomi) to display diplomatic relations and handle offer UI.
+📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.

@@ -85,3 +85,4 @@
 ## Team Updates
 
 📌 Team update (2026-02-17): Diplomacy system implemented per Phase 8 architecture — M2 complete
+📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.

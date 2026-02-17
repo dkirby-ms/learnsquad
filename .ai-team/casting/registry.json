@@ -34,6 +34,13 @@
       "role": "Tester",
       "assigned": "2025-07-12",
       "status": "active"
+    },
+    "alex": {
+      "name": "Alex",
+      "universe": "The Expanse",
+      "role": "Code Reviewer",
+      "assigned": "2025-01-20",
+      "status": "active"
     }
   }
 }

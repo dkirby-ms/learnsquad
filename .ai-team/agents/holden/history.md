@@ -64,3 +64,4 @@
 | 2-player diplomacy only | Avoids coalition complexity in MVP |
 
 This architecture enables meaningful multiplayer interaction (presence, ownership, cooperation) without overbuilding. Extensions like resource costs for claims, multi-party alliances, and espionage deferred to post-MVP.
+📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.
