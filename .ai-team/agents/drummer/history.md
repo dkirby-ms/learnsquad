@@ -49,9 +49,13 @@
 📌 Colyseus tests require server running: start with `cd server && npm start` before running integration project
 📌 Test helper: `waitForState()` utility for async state condition polling with timeout — pattern for all SDK-based tests
 📌 Territory system tests: `src/game/__tests__/territory.test.ts` covers Phase 8 territory claiming (32 tests)
+📌 Diplomacy system tests: `src/game/__tests__/diplomacy.test.ts` covers Phase 8 diplomacy system (27 tests)
+📌 Diplomacy system implementation: `src/game/systems/diplomacy.ts` — pure function diplomacy state machine with alliance/war/peace mechanics
+📌 Diplomacy test coverage: State transitions (8), validation rules (6), event emission (4), determinism (2), edge cases (4) + 3 helper tests for complex scenarios
 
 ## Team Updates
 
 📌 Team update (2026-02-16): E2E test suite for Colyseus established with SDK-based verification — decided by Ralph
 📌 Team update (2026-02-16): CIAM OAuth test suite migrated — 88 passing, 69 todo, 8 skipped — decided by Ralph
 📌 Team update (2026-02-17): Phase 8 territory tests ready for implementation — decided by Drummer
+📌 Team update (2026-02-18): Phase 8 diplomacy tests complete — 27 tests all passing, pure function system ready for Colyseus integration — decided by Drummer

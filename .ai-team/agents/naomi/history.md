@@ -111,3 +111,72 @@
 - Amos: NodeSchema fields (controlPoints, maxControlPoints) for progress bar
 - Miller: Territory claiming system integration with GameLoop
 
+### 2025-07-16: Diplomacy UI Implementation (Phase 8b - N3, N4)
+
+**By:** Naomi
+
+**What:** Implemented diplomacy UI and visual indicators for player relations:
+
+1. **Diplomacy Panel (N3)**:
+   - Created `DiplomacyPanel` component (`src/components/DiplomacyPanel/`) showing:
+     - All other players with diplomatic status badges (Allied, At War, Neutral)
+     - Action buttons: Offer Alliance, Declare War, Propose Peace
+     - Button state logic: Can't ally if at war, can't war if already at war, can't peace if not at war
+     - Toast notification system for diplomacy actions (4-second timeout, top-right position)
+   - Extended `gameState` store with diplomatic relations:
+     - Added `DiplomaticRelation` interface and `DiplomaticStatus` type
+     - Added methods: `getDiplomaticRelations()`, `getDiplomaticStatus()`, `updateDiplomaticRelations()`
+     - Bidirectional key mapping (sorted player IDs) for efficient lookup
+   - Added diplomacy hooks in `useGameState`:
+     - `useDiplomacy(playerId)` — returns relations, getAllies(), getEnemies(), getStatus()
+     - `useDiplomaticRelations()` — all relations
+     - `useDiplomaticStatus(player1, player2)` — status between two players
+   - Added 6 diplomacy message senders to `useGameSocket`:
+     - `offerAlliance(targetPlayerId)`, `acceptAlliance(fromPlayerId)`, `rejectAlliance(fromPlayerId)`
+     - `declareWar(targetPlayerId)`, `proposePeace(targetPlayerId)`, `acceptPeace(fromPlayerId)`
+
+2. **Visual Integration (N4)**:
+   - Enhanced `NodeView` with diplomatic indicators:
+     - Allied nodes: green box-shadow glow + 🤝 emoji badge
+     - Enemy nodes: red box-shadow glow + ⚔️ emoji badge
+     - Extended resource info for allied nodes (shows regen rates)
+     - CSS classes: `.allyNode`, `.enemyNode` with glow effects
+   - Integrated into `GameWorld`:
+     - DiplomacyPanel shown in left sidebar (only when 2+ players)
+     - Passes `isAlly`/`isEnemy` flags to NodeView based on diplomatic status
+     - Uses `useDiplomacy` hook to get allies/enemies lists
+
+**Why:** Phase 8b adds the diplomacy layer to multiplayer gameplay. Players can now form alliances, declare war, and negotiate peace. Visual indicators make diplomatic relations immediately visible on the game map. The implementation uses the existing patterns (CSS modules, hooks, Colyseus sync) and is ready for backend integration when Amos implements the diplomacy message handlers and schema updates.
+
+**Technical decisions:**
+- Diplomatic relations stored in gameState with bidirectional mapping
+- Toast notifications using simple DOM-based system (no external library)
+- Action buttons use strict state machine rules (prevent invalid transitions)
+- Allied nodes show full resource info (includes regen rates)
+- Emoji badges for quick visual recognition (🤝 for allies, ⚔️ for enemies)
+- Box-shadow glow distinguishes from border-based ownership indicators
+
+**Files created:**
+- `src/components/DiplomacyPanel/DiplomacyPanel.tsx` (diplomacy panel UI)
+- `src/components/DiplomacyPanel/DiplomacyPanel.module.css` (diplomacy panel styles)
+- `src/components/DiplomacyPanel/index.ts` (exports)
+- `.ai-team/decisions/inbox/naomi-diplomacy-ui.md` (decision log)
+
+**Files modified:**
+- `src/store/gameState.ts` — Added DiplomaticRelation type, diplomatic relations management
+- `src/hooks/useGameState.ts` — Added useDiplomacy, useDiplomaticStatus, useDiplomaticRelations hooks
+- `src/hooks/useGameSocket.ts` — Added 6 diplomacy message senders, diplomatic state sync
+- `src/hooks/index.ts` — Exported new types and hooks
+- `src/components/GameWorld/GameWorld.tsx` — Integrated DiplomacyPanel, added diplomatic indicators
+- `src/components/GameWorld/GameWorld.module.css` — Added .diplomacyContainer style
+- `src/components/NodeView/NodeView.tsx` — Added isAlly/isEnemy props, badges, conditional resource display
+- `src/components/NodeView/NodeView.module.css` — Added ally/enemy node styles
+- `.ai-team/agents/naomi/history.md` — This entry
+
+**Awaiting from team:**
+- Amos: Backend handlers for diplomacy messages (offer_alliance, accept_alliance, reject_alliance, declare_war, propose_peace, accept_peace)
+- Amos: DiplomaticRelations schema in Colyseus state (player1Id, player2Id, status)
+- Amos: Diplomacy event notifications (alliance_offered, alliance_accepted, war_declared, peace_proposed, etc.)
+- Miller: Diplomacy system integration with GameLoop (state transitions, validation)
+
+

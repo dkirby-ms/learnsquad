@@ -67,3 +67,21 @@
 ## Team Updates
 
 📌 Team update (2026-02-16): Territory claiming system implemented per Phase 8 architecture — M1 and M3 complete
+
+📌 Diplomacy system lives in `src/game/systems/diplomacy.ts` — handles player relationships
+📌 `applyDiplomaticAction()` is the main entry point for processing diplomatic actions
+📌 `getDiplomaticStatus()` looks up relationship status between two players
+📌 DiplomaticStatus enum: `Neutral`, `Allied`, `War` — three possible states
+📌 DiplomaticAction enum: `OfferAlliance`, `AcceptAlliance`, `RejectAlliance`, `DeclareWar`, `ProposePeace`, `AcceptPeace`
+📌 Alliance offers require acceptance — stored in pendingOffers until accepted/rejected
+📌 War declarations are unilateral — immediate effect without acceptance
+📌 Peace proposals require acceptance — same pattern as alliance offers
+📌 Validation rules: Can't act on yourself, war requires both players to have claimed nodes, peace requires war state
+📌 Diplomacy events: `AllianceOffered`, `AllianceFormed`, `AllianceRejected`, `WarDeclared`, `PeaceProposed`, `PeaceMade`
+📌 Helper functions: `areAllied()`, `areAtWar()`, `getAllDiplomaticRelations()`, `getPendingOffersFor()`
+📌 Diplomatic relations stored in Map with consistent key ordering: alphabetically sorted player IDs
+📌 System is pure and deterministic — same actions + world = same outcome
+
+## Team Updates
+
+📌 Team update (2026-02-17): Diplomacy system implemented per Phase 8 architecture — M2 complete

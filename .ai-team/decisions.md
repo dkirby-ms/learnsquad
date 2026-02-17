@@ -1787,3 +1787,495 @@ room.state.nodes.forEach(node => {
 - Schema: `server/src/colyseus/schema.ts`
 - GameRoom: `server/src/colyseus/GameRoom.ts`
 - Converters: `server/src/colyseus/converters.ts`
+# Diplomacy UI Implementation
+
+**Date:** 2025-07-16  
+**Author:** Naomi  
+**Status:** Implemented
+
+## Context
+
+Phase 8 requires diplomacy features for multiplayer interactions. Players need to form alliances, declare war, and negotiate peace. This implementation provides the UI layer for these interactions.
+
+## Decisions Made
+
+### 1. DiplomacyPanel Component Structure
+
+**Decision:** Standalone panel component in left sidebar, below PlayerList.
+
+**Rationale:**
+- Maintains separation of concerns (presence vs. diplomacy)
+- Keeps all player interactions in same sidebar region
+- Easy to toggle visibility based on player count
+
+**Implementation:**
+- Shows all other players (excludes current player)
+- Displays diplomatic status badges (Allied, At War, Neutral)
+- Action buttons with state-based enable/disable logic
+- Toast notifications for player feedback
+
+### 2. Diplomatic Status Rules
+
+**Decision:** Strict state machine for diplomacy actions:
+- Can only ally with neutral players
+- Can declare war on neutral or allied players
+- Can only propose peace when at war
+- Cannot self-target
+
+**Rationale:**
+- Prevents invalid state transitions
+- Clear visual feedback via button states
+- Matches expected game mechanics
+
+**Alternatives considered:**
+- Allow war on allies (rejected: no warning system in MVP)
+- Allow multiple simultaneous proposals (deferred to backend)
+
+### 3. Visual Indicators for Allied/Enemy Nodes
+
+**Decision:** Use box-shadow glow and emoji badges for node diplomatic status:
+- Allied nodes: green glow + 🤝 badge
+- Enemy nodes: red glow + ⚔️ badge
+- Extended resource info for allied nodes (shows regen rates)
+
+**Rationale:**
+- Immediately visible without reading text
+- Consistent with existing node ownership visuals
+- Emoji badges provide quick recognition
+- Resource sharing fits alliance narrative
+
+**Alternatives considered:**
+- Border color only (rejected: already used for ownership)
+- Background color (rejected: too subtle)
+- Icon overlays on canvas (deferred to PixiJS phase)
+
+### 4. Diplomacy State Management
+
+**Decision:** Store diplomatic relations in gameState with bidirectional key mapping.
+
+**Implementation:**
+```typescript
+interface DiplomaticRelation {
+  player1Id: EntityId;
+  player2Id: EntityId;
+  status: 'neutral' | 'allied' | 'war';
+}
+```
+
+**Key generation:** Always sorted player IDs to ensure consistent lookup regardless of direction.
+
+**Rationale:**
+- Matches server schema structure
+- Efficient lookup for UI rendering
+- Supports future expansion (treaties, trade agreements)
+
+### 5. Toast Notification System
+
+**Decision:** Simple DOM-based toast system with 4-second timeout, no external library.
+
+**Rationale:**
+- Lightweight (no dependencies)
+- Sufficient for MVP feedback
+- Easy to replace later with more robust solution
+- Positioned top-right to avoid covering game area
+
+**Alternatives considered:**
+- react-toastify (rejected: overkill for MVP)
+- In-game event log only (rejected: easy to miss)
+
+### 6. Message Protocol
+
+**Decision:** Added 6 new message types to useGameSocket:
+- `offer_alliance`, `accept_alliance`, `reject_alliance`
+- `declare_war`, `propose_peace`, `accept_peace`
+
+**Rationale:**
+- Explicit actions map to clear user intent
+- Server can enforce rules and notify other players
+- Async nature allows for proposal/response pattern
+
+**Server Integration:**
+- Awaiting backend handlers from Amos
+- DiplomaticRelations schema sync from Colyseus state
+- Event notifications for diplomacy changes
+
+## Technical Details
+
+**Files Created:**
+- `src/components/DiplomacyPanel/DiplomacyPanel.tsx`
+- `src/components/DiplomacyPanel/DiplomacyPanel.module.css`
+- `src/components/DiplomacyPanel/index.ts`
+
+**Files Modified:**
+- `src/store/gameState.ts` — Added diplomatic relations storage and methods
+- `src/hooks/useGameState.ts` — Added useDiplomacy, useDiplomaticStatus, useDiplomaticRelations hooks
+- `src/hooks/useGameSocket.ts` — Added 6 diplomacy message senders, diplomatic state sync
+- `src/hooks/index.ts` — Exported new types and hooks
+- `src/components/GameWorld/GameWorld.tsx` — Integrated DiplomacyPanel, passed isAlly/isEnemy flags to NodeView
+- `src/components/GameWorld/GameWorld.module.css` — Added .diplomacyContainer style
+- `src/components/NodeView/NodeView.tsx` — Added isAlly/isEnemy props, visual badges, conditional resource display
+- `src/components/NodeView/NodeView.module.css` — Added ally/enemy node styles and badge styles
+
+## Testing Strategy
+
+**Manual Testing:**
+1. Connect multiple clients
+2. Verify diplomatic status displays correctly
+3. Test action button enable/disable logic
+4. Confirm toast notifications appear
+5. Check ally/enemy visual indicators on nodes
+6. Verify resource info visibility for allied nodes
+
+**Integration Points:**
+- Colyseus state sync: `state.diplomaticRelations`
+- Message handlers: awaiting backend implementation
+- Event notifications: awaiting backend diplomacy events
+
+## Future Enhancements
+
+1. Alliance proposals require accept/reject (current implementation is instant)
+2. Peace treaties with terms/conditions
+3. Trade agreements between allies
+4. Visibility restrictions for enemy territories
+5. Diplomacy event log filtering
+6. Canvas-based visual indicators (PixiJS integration)
+7. Notification sound effects
+8. Pending proposal indicators
+
+## Risks & Mitigations
+
+**Risk:** Backend schema may differ from assumed structure  
+**Mitigation:** Flexible state conversion functions, easy to adapt
+
+**Risk:** Toast notifications may overwhelm with many players  
+**Mitigation:** 4-second timeout, stacked layout, consider rate limiting later
+
+**Risk:** Ally/enemy status may not sync immediately  
+**Mitigation:** State updates on every Colyseus sync, real-time propagation
+
+## Open Questions
+
+1. Should alliance offers require mutual acceptance? (Currently instant)
+2. Should we show pending proposals in the UI?
+3. How do we handle simultaneous war declarations?
+4. Should there be a cooldown on diplomacy actions?
+
+## Success Metrics
+
+- Players can perform all diplomacy actions
+- Visual feedback is clear and immediate
+- No state inconsistencies between clients
+- UI remains responsive with 10+ players
+# Diplomacy System Implementation (M2)
+
+**Date:** 2026-02-17  
+**Author:** Miller (Game Systems Developer)  
+**Status:** Implemented
+
+## Context
+
+Phase 8 architecture requires a diplomacy system for player relationships. The system must handle alliances, wars, and peace treaties with proper validation and event generation.
+
+## Implementation
+
+Created `src/game/systems/diplomacy.ts` with the following components:
+
+### Types
+
+- **DiplomaticStatus** enum: `Neutral`, `Allied`, `War`
+- **DiplomaticAction** enum: `OfferAlliance`, `AcceptAlliance`, `RejectAlliance`, `DeclareWar`, `ProposePeace`, `AcceptPeace`
+- **DiplomaticRelation**: relationship between two players with status and establishedTick
+- **PendingOffer**: offer waiting for acceptance (alliance or peace)
+- **GameWorldWithDiplomacy**: extends GameWorld with diplomaticRelations Map and pendingOffers array
+
+### Core Functions
+
+**`getDiplomaticStatus(world, player1Id, player2Id)`**
+- Looks up current relationship status
+- Returns Neutral if no relationship exists
+- Uses consistent key ordering (alphabetical) for player pair
+
+**`validateDiplomaticAction(world, request)`**
+- Validates diplomatic action before applying
+- Enforces rules:
+  - Can't act on yourself
+  - Can't ally if already allied or at war
+  - War requires both players to have at least one claimed node
+  - Peace requires existing war state
+  - Can't have duplicate pending offers
+
+**`applyDiplomaticAction(world, request)`**
+- Main entry point for processing diplomatic actions
+- Validates action first, returns unchanged world if invalid
+- Creates pending offers for alliance/peace proposals
+- Immediately applies war declarations (unilateral)
+- Removes pending offer when accepted/rejected
+- Generates events for all state transitions
+- Returns updated world and events array
+
+### Helper Functions
+
+- `areAllied(world, player1Id, player2Id)`: boolean check
+- `areAtWar(world, player1Id, player2Id)`: boolean check
+- `getAllDiplomaticRelations(world)`: get all relations
+- `getPendingOffersFor(world, playerId)`: get pending offers for a player
+
+### Event Types
+
+Added to `src/game/types.ts`:
+- `AllianceOffered` - when alliance offer is made
+- `AllianceFormed` - when alliance is accepted
+- `AllianceRejected` - when alliance is rejected
+- `WarDeclared` - when war is declared
+- `PeaceProposed` - when peace is proposed
+- `PeaceMade` - when peace is accepted
+
+## Design Decisions
+
+### 1. Asymmetric Actions
+
+**Decision:** Alliance and peace require acceptance, war does not.
+
+**Rationale:**
+- War is unilateral by nature — you don't need permission to attack
+- Alliance and peace are mutual agreements requiring both parties' consent
+- Matches real-world diplomatic conventions
+- Creates interesting gameplay: you can't force someone to be your ally
+
+### 2. Pending Offers Storage
+
+**Decision:** Store pending offers in array, not as part of relationship.
+
+**Rationale:**
+- Offers can exist before a relationship exists
+- Multiple offers can be pending (alliance from A→B, peace from B→A)
+- Easier to filter and expire offers
+- Cleaner separation of "current state" vs "proposed state"
+
+### 3. Consistent Key Ordering
+
+**Decision:** Always order player IDs alphabetically in relation keys.
+
+**Rationale:**
+- Ensures `getDiplomaticStatus(A, B)` returns same result as `getDiplomaticStatus(B, A)`
+- Prevents duplicate relationships with reversed player order
+- Simplifies lookup logic
+- Deterministic behavior regardless of query order
+
+### 4. Validation Before Application
+
+**Decision:** Separate validation and application logic.
+
+**Rationale:**
+- Validation can be reused by UI to enable/disable buttons
+- Clear error messages for invalid actions
+- Server can validate before broadcasting
+- Testability: can test validation rules independently
+
+### 5. War Requires Claimed Nodes
+
+**Decision:** Both players must have at least one claimed node to declare war.
+
+**Rationale:**
+- Prevents "phantom wars" with players who have no territory
+- Ensures wars have tangible stakes
+- Matches Phase 8 architecture requirement
+- Forces players to establish presence before engaging in conflict
+
+### 6. Immutable Data Structures
+
+**Decision:** Clone relations Map and offers array before modifications.
+
+**Rationale:**
+- Maintains pure function contract
+- Enables time-travel debugging
+- Supports deterministic replay
+- Follows existing pattern from territory system
+
+## Testing
+
+Created comprehensive test suite in `src/game/__tests__/diplomacy.test.ts`:
+
+- 22 tests covering all diplomatic actions
+- Validation rules for each action type
+- Full alliance flow (offer → accept/reject)
+- War declaration and peace flow
+- Helper function behavior
+- Determinism verification
+
+All tests pass with 100% coverage of main logic paths.
+
+## Integration Points
+
+### For Amos (Backend)
+
+The system is ready for integration into GameRoom:
+
+```typescript
+// In GameRoom.onTick()
+if (diplomaticActions.length > 0) {
+  for (const action of diplomaticActions) {
+    const result = applyDiplomaticAction(world, action);
+    world = result.world;
+    events.push(...result.events);
+  }
+}
+```
+
+Message handlers needed:
+- `offer_alliance` → create DiplomaticActionRequest with OfferAlliance
+- `accept_alliance` → create request with AcceptAlliance
+- `reject_alliance` → create request with RejectAlliance
+- `declare_war` → create request with DeclareWar
+- `propose_peace` → create request with ProposePeace
+- `accept_peace` → create request with AcceptPeace
+
+### For Naomi (Frontend)
+
+Use these functions for UI:
+- `getDiplomaticStatus(world, myId, targetId)` — show current status
+- `getPendingOffersFor(world, myId)` — show incoming offers
+- `validateDiplomaticAction(world, request)` — disable invalid buttons
+- `areAllied(world, myId, targetId)` — show friendly indicators
+- `areAtWar(world, myId, targetId)` — show enemy indicators
+
+## Open Questions
+
+1. **Q:** Should alliance offers expire after N ticks?
+   **Status:** Not implemented in M2. Can add expiration logic in future iteration if needed.
+
+2. **Q:** Can allied players break alliance, or only via war declaration?
+   **Status:** Not included in Phase 8 spec. Would need new action type `BreakAlliance`.
+
+3. **Q:** Should there be a cooldown on declaring war again after peace?
+   **Status:** Not specified. Pure game design decision for later.
+
+## Success Criteria
+
+- ✅ All types defined per Phase 8 architecture
+- ✅ `applyDiplomaticAction()` handles all 6 action types
+- ✅ `getDiplomaticStatus()` returns correct status
+- ✅ Validation rules enforced (no self-actions, war requires nodes, etc.)
+- ✅ Events generated for all state transitions
+- ✅ Pure and deterministic (22/22 tests pass)
+- ✅ Ready for backend integration
+
+## What's Next
+
+M2 is complete. M3 (game loop integration) was already done for territory system. The diplomacy system follows the same pattern and can be integrated by Amos when he implements the A4 handlers.
+# Decision: Diplomacy Schema & Handlers Architecture
+
+**Date:** 2025-07-16  
+**Author:** Amos (Backend Developer)  
+**Status:** Implemented
+
+## Context
+
+Phase 8a requires implementing diplomacy features for multiplayer interactions. Players need to form alliances, declare war, and negotiate peace. The backend must track diplomatic relations and provide message handlers for state changes.
+
+## Decision
+
+Implemented diplomacy using Colyseus schema sync with server-side offer tracking.
+
+### Architecture Choices
+
+1. **DiplomacySchema as State**
+   - Stored in `MapSchema<DiplomacySchema>` on GameState
+   - Key format: `"{playerId1}-{playerId2}"` (sorted alphabetically)
+   - Status values: `neutral`, `allied`, `war`
+   - Colyseus auto-broadcasts changes to all clients
+
+2. **Pending Offers in Memory**
+   - Tracked in `Map<string, DiplomaticOffer>` (not schema)
+   - Stores type ('alliance' | 'peace'), sender, recipient, tick
+   - Cleaned up on accept/reject
+   - Prevents duplicate offers (map key = relation ID)
+
+3. **Validation Rules**
+   - War requires both players own nodes (checked via `node.ownerId`)
+   - Peace requires existing war state
+   - Self-targeting blocked
+   - Disconnected player checks for new offers
+
+4. **Message Flow**
+   - Offer → Pending → Accept/Reject
+   - Sender creates offer → Target receives notification → Target responds
+   - State updates only on accept
+
+### Why This Design?
+
+**Pros:**
+- Separates transient offers from persistent state
+- Consistent relation IDs prevent duplication
+- Schema sync automatically broadcasts to all clients
+- Server authority prevents diplomatic cheating
+- Simple bilateral model (no multi-party alliances yet)
+
+**Alternatives Considered:**
+- Store pending offers in schema: Rejected (creates noise, clients see half-formed offers)
+- Unilateral war declarations: Rejected (want mutual consent for alliances, but war is unilateral)
+- Timeout offers after N ticks: Deferred (can add later if needed)
+
+## Implementation Details
+
+### Schema Addition
+
+```typescript
+export class DiplomacySchema extends Schema {
+  @type('string') id: string = '';              // "{playerId1}-{playerId2}" (sorted)
+  @type('string') player1Id: string = '';
+  @type('string') player2Id: string = '';
+  @type('string') status: string = 'neutral';   // neutral/allied/war
+  @type('number') establishedTick: number = 0;
+}
+```
+
+### Message Handlers
+
+- `offer_alliance` → Creates pending offer, sends `alliance_offer` event
+- `accept_alliance` → Updates relation to 'allied', sends `alliance_formed`
+- `reject_alliance` → Removes pending offer, sends `alliance_rejected`
+- `declare_war` → Immediately updates relation to 'war', sends `war_declared`
+- `propose_peace` → Creates pending offer, sends `peace_offer` event
+- `accept_peace` → Updates relation to 'neutral', sends `peace_established`
+
+### Client Events
+
+Clients receive these events via `client.send()`:
+- `alliance_offer: { fromPlayerId, fromPlayerName }`
+- `alliance_formed: { withPlayerId, withPlayerName }`
+- `alliance_rejected: { byPlayerId, byPlayerName }`
+- `war_declared: { byPlayerId, byPlayerName }`
+- `peace_offer: { fromPlayerId, fromPlayerName }`
+- `peace_established: { withPlayerId, withPlayerName }`
+
+## Future Considerations
+
+1. **Offer Timeouts**: Add tick-based expiry for stale offers
+2. **Multi-Party Alliances**: Extend schema to support coalition structures
+3. **Diplomatic Actions**: Add trade embargoes, vassalization, etc.
+4. **Reputation System**: Track war declarations, betrayals, alliance longevity
+5. **AI Diplomacy**: When NPCs added, use same handler system
+
+## Integration Points
+
+- **Frontend (Naomi)**: Display diplomatic status in player list, show offer UI modals
+- **Game Simulation (Miller)**: Use diplomacy data for AI behavior, combat calculations
+- **Database**: Store historical diplomacy events for post-game analysis
+
+## Testing Notes
+
+- Build passes (`npm run build`)
+- Manual testing requires 2+ connected clients
+- Test scenarios:
+  - Alliance formation/rejection
+  - War declaration with/without nodes
+  - Peace negotiation
+  - Disconnected player offer handling
+
+## Status
+
+✅ Implementation complete  
+✅ TypeScript compilation successful  
+⏳ Frontend integration pending (Naomi)  
+⏳ Game simulation integration pending (Miller)
