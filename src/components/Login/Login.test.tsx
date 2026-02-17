@@ -540,7 +540,10 @@ describe('OAuth Login Component', () => {
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: originalLocation,
+    });
   });
 
   describe('Sign in with Microsoft Button', () => {
@@ -597,7 +600,11 @@ describe('OAuth Login Component', () => {
   describe('Authenticated State', () => {
     // Helper to render with authenticated state
     const AuthenticatedOAuthLogin: React.FC = () => {
-      const [authState, setAuthState] = React.useState({
+      const [authState, setAuthState] = React.useState<{
+        isAuthenticated: boolean;
+        user: { email: string; displayName: string } | null;
+        isLoading: boolean;
+      }>({
         isAuthenticated: true,
         user: { email: 'test@example.com', displayName: 'Test User' },
         isLoading: false,
