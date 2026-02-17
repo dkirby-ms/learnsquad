@@ -48,8 +48,10 @@
 📌 Colyseus state sync tests: verify exact node count (4), correct node IDs, correct names, resources, connections
 📌 Colyseus tests require server running: start with `cd server && npm start` before running integration project
 📌 Test helper: `waitForState()` utility for async state condition polling with timeout — pattern for all SDK-based tests
+📌 Territory system tests: `src/game/__tests__/territory.test.ts` covers Phase 8 territory claiming (32 tests)
 
 ## Team Updates
 
 📌 Team update (2026-02-16): E2E test suite for Colyseus established with SDK-based verification — decided by Ralph
 📌 Team update (2026-02-16): CIAM OAuth test suite migrated — 88 passing, 69 todo, 8 skipped — decided by Ralph
+📌 Team update (2026-02-17): Phase 8 territory tests ready for implementation — decided by Drummer

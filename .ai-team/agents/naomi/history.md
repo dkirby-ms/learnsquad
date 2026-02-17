@@ -46,3 +46,68 @@
 
 📌 Team update (2026-02-16): Colyseus frontend migration complete — aligned with backend message protocol — decided by Ralph
 📌 Team update (2026-02-16): CIAM OAuth frontend architecture established — supports multi-provider extension — decided by Ralph
+
+### 2025-07-16: Player Presence & Territory Control UI (Phase 8a)
+
+**By:** Naomi
+
+**What:** Implemented player presence and territory control features for multiplayer gameplay:
+
+1. **Player Presence UI (N1)**:
+   - Created `PlayerList` component (`src/components/PlayerList/`) showing online players with:
+     - Name, color indicator, idle status (fades after 30 ticks of inactivity)
+     - Currently focused node display
+     - Connected/disconnected states
+   - Extended `gameState` store with player data management:
+     - Added `Player` interface with focus tracking and activity timestamps
+     - Added `updatePlayers()` and `getPlayers()` methods
+     - New hooks: `usePlayers()`, `usePlayer(id)`
+   - Added focus tracking to `useGameSocket`:
+     - `updateFocus(nodeId)` sends `update_focus` message on node click/hover
+     - Focus updates synced via Colyseus schema
+
+2. **Territory Control UI (N2)**:
+   - Enhanced `NodeView` component with ownership visuals:
+     - Colored left border matching owner's player color
+     - Owner name display with color highlighting
+     - Claim/Abandon buttons (shown when `showControls={true}`)
+     - Claim progress bar for contested nodes (UI ready, server integration pending)
+     - Status badges: "Neutral", "Claimed", "Contested"
+   - Added territory message senders to `useGameSocket`:
+     - `claimNode(nodeId)` sends `claim_node` message
+     - `abandonNode(nodeId)` sends `abandon_node` message
+   - Integrated into `GameWorld`:
+     - PlayerList shown in left sidebar when connected
+     - Node ownership resolved from player data
+     - Controls passed to selected node detail view
+
+**Why:** Phase 8a establishes the UI foundation for multiplayer interactions. Player presence creates awareness of who's online and where they're looking. Territory control UI gives players visual feedback on ownership and the tools to claim/abandon nodes. The implementation follows existing patterns (CSS modules, hooks, component structure) and is ready for backend integration when Miller and Amos implement the territory claiming system.
+
+**Technical decisions:**
+- Player color displayed via inline styles (dynamic per-player)
+- Focus updates sent on both click and hover (hover removed from final impl to reduce message spam)
+- Idle threshold set at 30 ticks (configurable constant)
+- Progress bar implemented but hardcoded to 0% until backend provides `controlPoints` data
+- Current player ID temporarily uses first player in list (needs auth integration)
+
+**Files created:**
+- `src/components/PlayerList/PlayerList.tsx` (player list UI)
+- `src/components/PlayerList/PlayerList.module.css` (player list styles)
+- `src/components/PlayerList/index.ts` (exports)
+
+**Files modified:**
+- `src/store/gameState.ts` — Added Player type, player management methods
+- `src/hooks/useGameState.ts` — Added usePlayers, usePlayer hooks
+- `src/hooks/useGameSocket.ts` — Added updateFocus, claimNode, abandonNode message senders, player sync
+- `src/hooks/index.ts` — Exported new hooks and Player type
+- `src/components/NodeView/NodeView.tsx` — Added ownership visuals, claim/abandon controls
+- `src/components/NodeView/NodeView.module.css` — Added territory control styles
+- `src/components/GameWorld/GameWorld.tsx` — Integrated PlayerList, added node owner resolution, focus tracking
+- `src/components/GameWorld/GameWorld.module.css` — Added playerListContainer styles
+
+**Awaiting from team:**
+- Amos: Backend handlers for `update_focus`, `claim_node`, `abandon_node` messages
+- Amos: PlayerSchema fields in Colyseus state (name, color, focusedNodeId, lastActivityTick)
+- Amos: NodeSchema fields (controlPoints, maxControlPoints) for progress bar
+- Miller: Territory claiming system integration with GameLoop
+

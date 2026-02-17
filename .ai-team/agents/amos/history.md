@@ -44,3 +44,44 @@
 
 📌 Team update (2026-02-16): Colyseus backend implementation complete — ready for frontend integration — decided by Ralph
 📌 Team update (2026-02-16): CIAM OAuth implemented with HttpOnly cookies and separate dev endpoints — decided by Ralph
+
+### 2025-07-16: Phase 8a Territory Control Implementation (A1, A2, A3)
+
+**By:** Amos
+
+**What:** Implemented schema updates and territory control handlers for Phase 8a multiplayer features.
+
+**Changes:**
+
+**A1 — Schema Updates:**
+- Added to `PlayerSchema`: `name`, `color`, `focusedNodeId`, `lastActivityTick`
+- Added to `NodeSchema`: `controlPoints` (default 0), `maxControlPoints` (default 100)
+- Updated `converters.ts` to handle new fields in `nodeToSchema()`
+
+**A2 — Player Presence Handlers:**
+- Added `update_focus` message handler — updates player's `focusedNodeId`
+- Added `player_activity` handler — updates `lastActivityTick` to current tick
+- Set player name/color on join: uses `options.name` or generates "Player N", assigns color from predefined palette
+- Color palette: 8 colors ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F']
+- Color management: tracks used colors, frees on player leave, generates random if all used
+
+**A3 — Territory Control Handlers:**
+- Added `claim_node` message handler — validates player/node exist, prevents self-claiming, adds to `activeClaims` map
+- Added `abandon_node` handler — removes claim from `activeClaims`
+- Created `private activeClaims: Map<string, ClaimAction>` in GameRoom
+- Implemented `processClaims()` method called in `onTick()`:
+  - Increments `controlPoints` by 10/tick for neutral/own nodes
+  - Decrements by 5/tick when contested (another player owns it)
+  - Transfers ownership when `controlPoints` reach `maxControlPoints` (100) or 0
+  - Updates `node.status` to 'contested', 'neutral', or 'claimed'
+- Clears player's active claims on disconnect
+
+**Message types added:**
+- `update_focus: { nodeId: string }`
+- `player_activity: {}`
+- `claim_node: { nodeId: string }`
+- `abandon_node: { nodeId: string }`
+
+**Why:** Enables multiplayer territory control with time-gated claiming. Server-authoritative design prevents cheating. Claims process each tick, creating tension without instant land grabs. Player presence tracking lets clients see who's online and where they're focused.
+
+**Status:** Build passes. Ready for frontend integration (Naomi) and game simulation integration (Miller).

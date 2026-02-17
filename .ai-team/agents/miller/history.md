@@ -53,3 +53,17 @@
 
 📌 Team update (2026-02-16): Event system architecture with handler registry completed — decided by Ralph
 📌 Team update (2026-02-16): Game simulation engine established — pure, deterministic, separable — decided by Ralph
+
+📌 Territory claiming system lives in `src/game/systems/territory.ts` — handles node ownership mechanics
+📌 `processTerritoryClaims()` is the main entry point for territory processing during tick
+📌 Claim mechanics: +10 control points/tick for neutral, -5 control points/tick for contested
+📌 Territory events: `NodeClaimed`, `NodeContested`, `NodeLost` — emitted at state transitions
+📌 `controlPoints` and `maxControlPoints` added to Node interface (optional for backwards compatibility)
+📌 Game loop integration: `processTick()` now accepts optional `activeClaims` parameter
+📌 Territory system is pure and deterministic — same claims + world = same outcome
+📌 ClaimAction type defines player claims: playerId, nodeId, tick
+📌 Helper functions: `canClaim()` for validation, `getClaimProgress()` for UI, `abandonNode()` for reset
+
+## Team Updates
+
+📌 Team update (2026-02-16): Territory claiming system implemented per Phase 8 architecture — M1 and M3 complete
