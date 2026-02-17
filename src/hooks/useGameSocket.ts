@@ -8,7 +8,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client, Room } from '@colyseus/sdk';
 import { gameStateStore } from '../store/gameState';
-import { GameSpeed, GameWorld, GameEvent, Node, EntityId, Connection } from '../game/types';
+import type { Player } from '../store/gameState';
+import { GameSpeed, GameWorld, GameEvent, Node, EntityId, Connection, NodeStatus, ConnectionType } from '../game/types';
 
 /** Connection status */
 export enum ConnectionStatus {
@@ -47,8 +48,28 @@ export interface GameSocketReturn {
   resume: () => void;
   /** Send a set speed command */
   setSpeed: (speed: GameSpeed) => void;
+  /** Update player focus on a node */
+  updateFocus: (nodeId: EntityId) => void;
+  /** Claim a node */
+  claimNode: (nodeId: EntityId) => void;
+  /** Abandon a node */
+  abandonNode: (nodeId: EntityId) => void;
+  /** Offer alliance to another player */
+  offerAlliance: (targetPlayerId: string) => void;
+  /** Accept alliance offer from another player */
+  acceptAlliance: (fromPlayerId: string) => void;
+  /** Reject alliance offer from another player */
+  rejectAlliance: (fromPlayerId: string) => void;
+  /** Declare war on another player */
+  declareWar: (targetPlayerId: string) => void;
+  /** Propose peace with another player */
+  proposePeace: (targetPlayerId: string) => void;
+  /** Accept peace proposal from another player */
+  acceptPeace: (fromPlayerId: string) => void;
   /** Last connection attempt time */
   lastConnectAttempt: number | null;
+  /** Node ID currently being claimed by this player (local state for UI feedback) */
+  activeClaimNodeId: EntityId | null;
 }
 
 const DEFAULT_CONFIG: Required<GameSocketConfig> = {
@@ -126,6 +147,55 @@ function stateToGameWorld(state: any): GameWorld {
   };
 }
 
+/**
+ * Extract player data from Colyseus state
+ */
+function playersFromState(state: any): Player[] {
+  if (!state?.players || typeof state.players.forEach !== 'function') {
+    return [];
+  }
+
+  const players: Player[] = [];
+  state.players.forEach((player: any, id: string) => {
+    if (player) {
+      players.push({
+        id: id,
+        sessionId: player.sessionId ?? '',
+        name: player.name ?? 'Player',
+        color: player.color ?? '#FFFFFF',
+        joinedAt: player.joinedAt ?? 0,
+        isConnected: player.isConnected ?? false,
+        focusedNodeId: player.focusedNodeId ?? '',
+        lastActivityTick: player.lastActivityTick ?? 0,
+      });
+    }
+  });
+
+  return players;
+}
+
+/**
+ * Extract diplomatic relations from Colyseus state
+ */
+function diplomaticRelationsFromState(state: any): import('../store/gameState').DiplomaticRelation[] {
+  if (!state?.diplomaticRelations || typeof state.diplomaticRelations.forEach !== 'function') {
+    return [];
+  }
+
+  const relations: import('../store/gameState').DiplomaticRelation[] = [];
+  state.diplomaticRelations.forEach((relation: any) => {
+    if (relation) {
+      relations.push({
+        player1Id: relation.player1Id ?? '',
+        player2Id: relation.player2Id ?? '',
+        status: relation.status ?? 'neutral',
+      });
+    }
+  });
+
+  return relations;
+}
+
 function nodeFromSchema(node: any, id: string): Node {
   // Guard against undefined node
   if (!node) {
@@ -133,7 +203,7 @@ function nodeFromSchema(node: any, id: string): Node {
       id,
       name: '',
       position: { x: 0, y: 0 },
-      status: 'neutral',
+      status: NodeStatus.Neutral,
       ownerId: null,
       resources: [],
       connectionIds: [],
@@ -162,10 +232,12 @@ function nodeFromSchema(node: any, id: string): Node {
     id,
     name: node.name ?? '',
     position,
-    status: node.status ?? 'neutral',
+    status: (node.status ?? 'neutral') as NodeStatus,
     ownerId: node.ownerId || null,
     resources,
     connectionIds,
+    controlPoints: node.controlPoints ?? 0,
+    maxControlPoints: node.maxControlPoints ?? 100,
   };
 }
 
@@ -176,7 +248,7 @@ function connectionFromSchema(conn: any, id: string): Connection {
       id,
       fromNodeId: '',
       toNodeId: '',
-      type: 'direct',
+      type: ConnectionType.Direct,
       travelTime: 1,
       isActive: true,
     };
@@ -186,7 +258,7 @@ function connectionFromSchema(conn: any, id: string): Connection {
     id,
     fromNodeId: conn.fromNodeId ?? '',
     toNodeId: conn.toNodeId ?? '',
-    type: conn.type ?? 'direct',
+    type: (conn.type ?? 'direct') as ConnectionType,
     travelTime: conn.travelTime ?? 1,
     isActive: conn.isActive ?? true,
   };
@@ -206,6 +278,7 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
   const [status, setStatus] = useState<ConnectionStatus>(ConnectionStatus.Disconnected);
   const [error, setError] = useState<string | null>(null);
   const [lastConnectAttempt, setLastConnectAttempt] = useState<number | null>(null);
+  const [activeClaimNodeId, setActiveClaimNodeId] = useState<EntityId | null>(null);
 
   const clearTimers = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -219,8 +292,14 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
     room.onStateChange((state) => {
       console.log('[Colyseus] State change received:', state);
       const world = stateToGameWorld(state);
+      const players = playersFromState(state);
+      const diplomaticRelations = diplomaticRelationsFromState(state);
       console.log('[Colyseus] Converted world:', world);
+      console.log('[Colyseus] Converted players:', players);
+      console.log('[Colyseus] Converted diplomatic relations:', diplomaticRelations);
       gameStateStore.applySnapshot(world);
+      gameStateStore.updatePlayers(players);
+      gameStateStore.updateDiplomaticRelations(diplomaticRelations);
     });
 
     // Handle events broadcast from server
@@ -378,15 +457,53 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
   }, [clearTimers]);
 
   const pause = useCallback(() => {
-    roomRef.current?.send('pause');
+    roomRef.current?.send('pause_game');
   }, []);
 
   const resume = useCallback(() => {
-    roomRef.current?.send('resume');
+    roomRef.current?.send('resume_game');
   }, []);
 
   const setSpeed = useCallback((speed: GameSpeed) => {
     roomRef.current?.send('set_speed', { speed });
+  }, []);
+
+  const updateFocus = useCallback((nodeId: EntityId) => {
+    roomRef.current?.send('update_focus', { nodeId });
+  }, []);
+
+  const claimNode = useCallback((nodeId: EntityId) => {
+    roomRef.current?.send('claim_node', { nodeId });
+    setActiveClaimNodeId(nodeId);
+  }, []);
+
+  const abandonNode = useCallback((nodeId: EntityId) => {
+    roomRef.current?.send('abandon_node', { nodeId });
+    setActiveClaimNodeId(null);
+  }, []);
+
+  const offerAlliance = useCallback((targetPlayerId: string) => {
+    roomRef.current?.send('offer_alliance', { targetPlayerId });
+  }, []);
+
+  const acceptAlliance = useCallback((fromPlayerId: string) => {
+    roomRef.current?.send('accept_alliance', { fromPlayerId });
+  }, []);
+
+  const rejectAlliance = useCallback((fromPlayerId: string) => {
+    roomRef.current?.send('reject_alliance', { fromPlayerId });
+  }, []);
+
+  const declareWar = useCallback((targetPlayerId: string) => {
+    roomRef.current?.send('declare_war', { targetPlayerId });
+  }, []);
+
+  const proposePeace = useCallback((targetPlayerId: string) => {
+    roomRef.current?.send('propose_peace', { targetPlayerId });
+  }, []);
+
+  const acceptPeace = useCallback((fromPlayerId: string) => {
+    roomRef.current?.send('accept_peace', { fromPlayerId });
   }, []);
 
   // Cleanup on unmount
@@ -407,6 +524,16 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
     pause,
     resume,
     setSpeed,
+    updateFocus,
+    claimNode,
+    abandonNode,
+    offerAlliance,
+    acceptAlliance,
+    rejectAlliance,
+    declareWar,
+    proposePeace,
+    acceptPeace,
     lastConnectAttempt,
+    activeClaimNodeId,
   };
 }

@@ -1,0 +1,114 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #141a26;
+  border-radius: 8px;
+  min-width: 220px;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8eaed;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.playerCard {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.playerCard[role='button'] {
+  cursor: pointer;
+}
+
+.playerCard[role='button']:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.playerCard.idle {
+  opacity: 0.5;
+}
+
+.playerCard.disconnected {
+  opacity: 0.4;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.colorIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+
+.playerName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e8eaed;
+  flex: 1;
+}
+
+.idleLabel,
+.disconnectedLabel {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.idleLabel {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.disconnectedLabel {
+  background: rgba(107, 114, 128, 0.15);
+  color: #9ca3af;
+}
+
+.focusInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.focusIcon {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.focusNode {
+  font-size: 12px;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

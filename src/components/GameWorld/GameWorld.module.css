@@ -23,6 +23,16 @@
   gap: 8px;
 }
 
+.playerListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.diplomacyContainer {
+  margin-top: 16px;
+}
+
 .sectionTitle {
   margin: 0;
   font-size: 12px;

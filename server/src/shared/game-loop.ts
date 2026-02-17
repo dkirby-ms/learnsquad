@@ -136,6 +136,7 @@ export class GameLoop {
   /** Start automatic tick processing */
   start(): void {
     if (this.tickInterval !== null) {
+      console.log('[GameLoop] Already running, ignoring start()');
       return;
     }
 
@@ -146,6 +147,7 @@ export class GameLoop {
     };
 
     const interval = Math.floor(this.baseTickRate / (this.world.speed || 1));
+    console.log(`[GameLoop] Starting with interval ${interval}ms (speed: ${this.world.speed})`);
     this.tickInterval = setInterval(() => this.tick(), interval);
   }
 

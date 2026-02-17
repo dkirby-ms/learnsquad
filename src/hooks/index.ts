@@ -12,4 +12,10 @@ export {
   useIsPaused,
   useGameSpeed,
   useGameStatus,
+  usePlayers,
+  usePlayer,
+  useDiplomaticRelations,
+  useDiplomaticStatus,
+  useDiplomacy,
 } from './useGameState';
+export type { Player, DiplomaticStatus, DiplomaticRelation } from '../store/gameState';

@@ -12,10 +12,12 @@
 import React, { useState, useMemo } from 'react';
 import styles from './GameWorld.module.css';
 import { useGameSocket, ConnectionStatus } from '../../hooks/index';
-import { useGameWorld } from '../../hooks/useGameState';
+import { useGameWorld, usePlayers, usePlayer, useDiplomacy } from '../../hooks/useGameState';
 import { GameControls } from '../GameControls/index';
 import { NodeView } from '../NodeView/index';
 import { EventLog } from '../EventLog/index';
+import { PlayerList } from '../PlayerList/index';
+import { DiplomacyPanel } from '../DiplomacyPanel/index';
 import { Node, EntityId } from '../../game/types';
 
 interface GameWorldProps {
@@ -34,11 +36,23 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
     pause,
     resume,
     setSpeed,
+    updateFocus,
+    claimNode,
+    abandonNode,
+    offerAlliance,
+    declareWar,
+    proposePeace,
+    activeClaimNodeId,
   } = useGameSocket({ url: wsUrl, gameId });
 
   const world = useGameWorld();
+  const players = usePlayers();
   const [selectedNodeId, setSelectedNodeId] = useState<EntityId | null>(null);
   const [eventLogCollapsed, setEventLogCollapsed] = useState(false);
+
+  // For now, we'll use the first player as the current player (until auth integration)
+  const currentPlayerId = players.length > 0 ? players[0].id : undefined;
+  const { getStatus: getDiplomaticStatus, getAllies, getEnemies } = useDiplomacy(currentPlayerId ?? null);
 
   // Debug: log world state on change
   console.log('[GameWorld] world:', world);
@@ -53,10 +67,42 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [world?.nodes]);
 
+  const allies = getAllies();
+  const enemies = getEnemies();
+
+  // Pre-fetch all node owners
+  const nodeOwners = useMemo(() => {
+    const owners: Record<EntityId, ReturnType<typeof usePlayer>> = {};
+    if (!world) return owners;
+    
+    nodeList.forEach(node => {
+      if (node.ownerId) {
+        const owner = players.find(p => p.id === node.ownerId);
+        if (owner) owners[node.id] = owner;
+      }
+    });
+    
+    return owners;
+  }, [nodeList, players, world]);
+
   const selectedNode = selectedNodeId && world?.nodes[selectedNodeId];
+  const selectedNodeOwner = selectedNode && typeof selectedNode !== 'string' && selectedNode.ownerId 
+    ? players.find(p => p.id === selectedNode.ownerId)
+    : undefined;
 
   const handleNodeClick = (node: Node) => {
-    setSelectedNodeId(node.id === selectedNodeId ? null : node.id);
+    const newSelectedId = node.id === selectedNodeId ? null : node.id;
+    setSelectedNodeId(newSelectedId);
+    
+    // Send focus update to server
+    if (newSelectedId) {
+      updateFocus(newSelectedId);
+    }
+  };
+
+  const handleNodeHover = (nodeId: EntityId) => {
+    // Send focus update on hover as well
+    updateFocus(nodeId);
   };
 
   return (
@@ -73,11 +119,44 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
           onSetSpeed={setSpeed}
         />
 
+        {/* Player List */}
+        {status === ConnectionStatus.Connected && players.length > 0 && (
+          <div className={styles.playerListContainer}>
+            <PlayerList 
+              players={players} 
+              currentTick={world?.currentTick ?? 0}
+            />
+          </div>
+        )}
+
+        {/* Diplomacy Panel */}
+        {status === ConnectionStatus.Connected && players.length > 1 && (
+          <div className={styles.diplomacyContainer}>
+            <DiplomacyPanel
+              players={players}
+              currentPlayerId={currentPlayerId ?? null}
+              getDiplomaticStatus={getDiplomaticStatus}
+              onOfferAlliance={offerAlliance}
+              onDeclareWar={declareWar}
+              onProposePeace={proposePeace}
+            />
+          </div>
+        )}
+
         {/* Selected Node Details */}
         {selectedNode && (
           <div className={styles.selectedNode}>
             <h2 className={styles.sectionTitle}>Selected Node</h2>
-            <NodeView node={selectedNode} isSelected />
+            <NodeView 
+              node={selectedNode} 
+              isSelected 
+              currentPlayerId={currentPlayerId}
+              ownerPlayer={selectedNodeOwner}
+              onClaim={claimNode}
+              onAbandon={abandonNode}
+              showControls
+              isBeingClaimed={activeClaimNodeId === selectedNode.id}
+            />
           </div>
         )}
       </aside>
@@ -105,14 +184,23 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
                 Nodes ({nodeList.length})
               </h2>
               <div className={styles.nodes}>
-                {nodeList.map((node) => (
-                  <NodeView
-                    key={node.id}
-                    node={node}
-                    isSelected={node.id === selectedNodeId}
-                    onClick={handleNodeClick}
-                  />
-                ))}
+                {nodeList.map((node) => {
+                  const isAllyNode = !!(node.ownerId && allies.includes(node.ownerId));
+                  const isEnemyNode = !!(node.ownerId && enemies.includes(node.ownerId));
+                  return (
+                    <NodeView
+                      key={node.id}
+                      node={node}
+                      isSelected={node.id === selectedNodeId}
+                      onClick={handleNodeClick}
+                      currentPlayerId={currentPlayerId}
+                      ownerPlayer={nodeOwners[node.id]}
+                      isAlly={isAllyNode}
+                      isEnemy={isEnemyNode}
+                      isBeingClaimed={activeClaimNodeId === node.id}
+                    />
+                  );
+                })}
               </div>
             </div>
           </>

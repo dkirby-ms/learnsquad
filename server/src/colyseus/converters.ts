@@ -50,6 +50,10 @@ export function nodeToSchema(node: Node): NodeSchema {
     schema.connectionIds.push(connId);
   }
   
+  // New fields for territory control
+  schema.controlPoints = (node as any).controlPoints ?? 0;
+  schema.maxControlPoints = (node as any).maxControlPoints ?? 100;
+  
   return schema;
 }
 
@@ -116,11 +120,21 @@ export function syncWorldToState(
   state.isPaused = world.isPaused;
   state.serverTime = Date.now();
   
-  // Update only changed nodes
+  // Update only changed nodes, preserving claim-related state
   for (const nodeId of changedNodeIds) {
     const node = world.nodes[nodeId];
     if (node) {
-      state.nodes.set(nodeId, nodeToSchema(node));
+      const existingNode = state.nodes.get(nodeId);
+      const newNode = nodeToSchema(node);
+      
+      // Preserve controlPoints and ownerId from existing state (managed by processClaims)
+      if (existingNode) {
+        newNode.controlPoints = existingNode.controlPoints;
+        newNode.ownerId = existingNode.ownerId;
+        newNode.status = existingNode.status;
+      }
+      
+      state.nodes.set(nodeId, newNode);
     } else {
       state.nodes.delete(nodeId);
     }

@@ -25,22 +25,28 @@ import {
   type EventConfig,
   DEFAULT_EVENT_CONFIG,
 } from './systems/events';
+import {
+  processTerritoryClaims,
+  type ClaimAction,
+} from './systems/territory';
 
 /**
  * Process a single game tick.
  * 
  * This is the core simulation step. It:
- * 1. Processes resource regeneration at all nodes
- * 2. Collects any events generated
- * 3. Processes the event queue (handlers may spawn chain events)
- * 4. Advances the tick counter
- * 5. Returns the new world state and events
+ * 1. Processes territory claims (if any)
+ * 2. Processes resource regeneration at all nodes
+ * 3. Collects any events generated
+ * 4. Processes the event queue (handlers may spawn chain events)
+ * 5. Advances the tick counter
+ * 6. Returns the new world state and events
  * 
  * This function is PURE - no side effects, completely deterministic.
  */
 export function processTick(
   world: GameWorld,
-  eventConfig: EventConfig = DEFAULT_EVENT_CONFIG
+  eventConfig: EventConfig = DEFAULT_EVENT_CONFIG,
+  activeClaims: readonly ClaimAction[] = []
 ): TickResult {
   // If paused, return unchanged state with no events
   if (world.isPaused) {
@@ -53,12 +59,22 @@ export function processTick(
 
   const nextTick = world.currentTick + 1;
   const collectedEvents: GameEvent[] = [];
-  const updatedNodes: Record<EntityId, Node> = {};
+  let updatedNodes: Record<EntityId, Node> = {};
 
-  // Process each node
-  for (const [nodeId, node] of Object.entries(world.nodes)) {
+  // Phase 1: Process territory claims
+  if (activeClaims.length > 0) {
+    const territoryResult = processTerritoryClaims(world, activeClaims, nextTick);
+    updatedNodes = territoryResult.world.nodes;
+    collectedEvents.push(...territoryResult.events);
+  } else {
+    updatedNodes = { ...world.nodes };
+  }
+
+  // Phase 2: Process each node (resources, etc.)
+  const finalNodes: Record<EntityId, Node> = {};
+  for (const [nodeId, node] of Object.entries(updatedNodes)) {
     const result = tickNode(node, nextTick);
-    updatedNodes[nodeId] = result.node;
+    finalNodes[nodeId] = result.node;
     collectedEvents.push(...result.events);
   }
 
@@ -71,7 +87,7 @@ export function processTick(
   });
 
   // Build intermediate world state
-  let newWorld = setNodes(world, updatedNodes);
+  let newWorld = setNodes(world, finalNodes);
   newWorld = advanceTick(newWorld);
   newWorld = clearEventQueue(newWorld);
 
@@ -100,14 +116,15 @@ export function processTick(
 export function processMultipleTicks(
   world: GameWorld,
   tickCount: number,
-  eventConfig: EventConfig = DEFAULT_EVENT_CONFIG
+  eventConfig: EventConfig = DEFAULT_EVENT_CONFIG,
+  activeClaims: readonly ClaimAction[] = []
 ): TickResult {
   let currentWorld = world;
   const allEvents: GameEvent[] = [];
   let lastProcessedTick = world.currentTick;
 
   for (let i = 0; i < tickCount; i++) {
-    const result = processTick(currentWorld, eventConfig);
+    const result = processTick(currentWorld, eventConfig, activeClaims);
     currentWorld = result.world;
     allEvents.push(...result.events);
     lastProcessedTick = result.processedTick;

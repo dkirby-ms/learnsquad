@@ -70,6 +70,10 @@ export interface Node {
   readonly resources: readonly Resource[];
   /** IDs of connections from this node */
   readonly connectionIds: readonly EntityId[];
+  /** Current control points (progress toward claiming) */
+  readonly controlPoints?: number;
+  /** Maximum control points needed for full claim */
+  readonly maxControlPoints?: number;
 }
 
 /** Event types that can occur during simulation */
@@ -81,6 +85,8 @@ export enum GameEventType {
   
   // Node events
   NodeClaimed = 'node_claimed',
+  NodeContested = 'node_contested',
+  NodeLost = 'node_lost',
   NodeDiscovered = 'node_discovered',
   
   // Connection events
@@ -91,6 +97,14 @@ export enum GameEventType {
   GatewayActivated = 'gateway_activated',
   GatewayReady = 'gateway_ready',
   GatewayCooldownExpired = 'gateway_cooldown_expired',
+  
+  // Diplomacy events
+  AllianceOffered = 'alliance_offered',
+  AllianceFormed = 'alliance_formed',
+  AllianceRejected = 'alliance_rejected',
+  WarDeclared = 'war_declared',
+  PeaceProposed = 'peace_proposed',
+  PeaceMade = 'peace_made',
   
   // System events
   TickProcessed = 'tick_processed',

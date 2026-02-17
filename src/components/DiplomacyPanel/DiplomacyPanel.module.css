@@ -1,0 +1,187 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #141a26;
+  border-radius: 8px;
+  min-width: 280px;
+  max-width: 350px;
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8eaed;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.emptyState {
+  padding: 24px 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.playerCard {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.colorIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 6px currentColor;
+  flex-shrink: 0;
+}
+
+.playerName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e8eaed;
+  flex: 1;
+}
+
+.status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.statusNeutral {
+  background: rgba(156, 163, 175, 0.15);
+  color: #9ca3af;
+}
+
+.statusAllied {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.statusWar {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.actionButton {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8eaed;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.actionButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.actionButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.warButton:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.warButton:hover:not(:disabled) {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.toastContainer {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+  max-width: 320px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toastInfo {
+  background: rgba(59, 130, 246, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.toastSuccess {
+  background: rgba(34, 197, 94, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.toastWarning {
+  background: rgba(251, 191, 36, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(252, 211, 77, 0.3);
+}
+
+.toastError {
+  background: rgba(239, 68, 68, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}

@@ -5,6 +5,7 @@
  * - Pure, deterministic tick processing
  * - Game world state management
  * - Resource regeneration and events
+ * - Territory claiming system
  * 
  * Designed for potential extraction to Rust/Go.
  */
@@ -17,3 +18,10 @@ export * from './models';
 
 // Game loop
 export { GameLoop, processTick, processMultipleTicks } from './loop';
+
+// Systems
+export * from './systems/resources';
+export * from './systems/territory';
+export * from './systems/connectivity';
+export * from './systems/events';
+export * from './systems/handlers';
