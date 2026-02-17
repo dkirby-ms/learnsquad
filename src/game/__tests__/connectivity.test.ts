@@ -194,7 +194,12 @@ describe('canTraverse', () => {
       const context: TraversalContext = {
         traverserId: 'player-1',
         currentTick: 0,
-        availableResources: { [ResourceType.Energy]: 20 },
+        availableResources: { 
+          [ResourceType.Energy]: 20,
+          [ResourceType.Minerals]: 0,
+          [ResourceType.Alloys]: 0,
+          [ResourceType.Research]: 0,
+        },
       };
       expect(canTraverse(gateway, context)).toBe(true);
     });
@@ -206,7 +211,12 @@ describe('canTraverse', () => {
       const context: TraversalContext = {
         traverserId: 'player-1',
         currentTick: 0,
-        availableResources: { [ResourceType.Energy]: 20 },
+        availableResources: { 
+          [ResourceType.Energy]: 20,
+          [ResourceType.Minerals]: 0,
+          [ResourceType.Alloys]: 0,
+          [ResourceType.Research]: 0,
+        },
       };
       expect(canTraverse(gateway, context)).toBe(false);
     });
@@ -218,7 +228,12 @@ describe('canTraverse', () => {
       const context: TraversalContext = {
         traverserId: 'player-1',
         currentTick: 0,
-        availableResources: { [ResourceType.Energy]: 20 },
+        availableResources: { 
+          [ResourceType.Energy]: 20,
+          [ResourceType.Minerals]: 0,
+          [ResourceType.Alloys]: 0,
+          [ResourceType.Research]: 0,
+        },
       };
       expect(canTraverse(gateway, context)).toBe(false);
     });
@@ -239,6 +254,8 @@ describe('canTraverse', () => {
         availableResources: {
           [ResourceType.Energy]: 10,
           [ResourceType.Minerals]: 10,
+          [ResourceType.Alloys]: 0,
+          [ResourceType.Research]: 0,
         },
       };
       expect(canTraverse(gateway, context)).toBe(true);
@@ -255,6 +272,8 @@ describe('canTraverse', () => {
         availableResources: {
           [ResourceType.Energy]: 100,
           [ResourceType.Minerals]: 5, // Not enough
+          [ResourceType.Alloys]: 0,
+          [ResourceType.Research]: 0,
         },
       };
       expect(canTraverse(gateway, context)).toBe(false);
@@ -1235,7 +1254,7 @@ describe('determinism', () => {
       ]
     );
 
-    const results: (typeof result1)[] = [];
+    const results = [];
     for (let i = 0; i < 10; i++) {
       results.push(findPath(world, 'a', 'e'));
     }
@@ -1289,14 +1308,14 @@ describe('determinism', () => {
       ]
     );
 
-    const paths: (typeof path1)[] = [];
+    const paths = [];
     for (let i = 0; i < 20; i++) {
       paths.push(findPath(world, 'a', 'd'));
     }
 
     const path1 = paths[0];
     for (const path of paths) {
-      expect(path!.steps.map(s => s.nodeId)).toEqual(path1!.steps.map(s => s.nodeId));
+      expect(path!.steps.map((s: any) => s.nodeId)).toEqual(path1!.steps.map((s: any) => s.nodeId));
     }
   });
 

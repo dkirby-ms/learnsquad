@@ -11,7 +11,7 @@ import styles from './GamePage.module.css';
 
 // Lazy load the GameWorld component
 const GameWorld = lazy(() =>
-  import('../components/GameWorld').then((mod) => ({ default: mod.GameWorld }))
+  import('../components/GameWorld/index.js').then((mod) => ({ default: mod.GameWorld }))
 );
 
 function LoadingScreen() {
@@ -38,10 +38,19 @@ function UnauthenticatedScreen() {
 }
 
 // Get WebSocket URL from env or default to localhost:3000 in development
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+// Helper function to access Vite env at runtime (avoids tsc import.meta issues)
+const getWsUrl = (): string => {
+  try {
+    // @ts-ignore - import.meta.env exists at runtime in Vite
+    return import.meta.env.VITE_WS_URL || 'ws://localhost:3000';
+  } catch {
+    return 'ws://localhost:3000';
+  }
+};
 
 export function GamePage() {
   const { isAuthenticated, isLoading, user } = useAuth();
+  const WS_URL = getWsUrl();
 
   if (isLoading) {
     return <LoadingScreen />;
