@@ -60,3 +60,6 @@
 📌 Team update (2026-02-17): Phase 8 territory tests ready for implementation — decided by Drummer
 📌 Team update (2026-02-18): Phase 8 diplomacy tests complete — 27 tests all passing, pure function system ready for Colyseus integration — decided by Drummer
 📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.
+📌 Chat feature tests: Comprehensive backend test suite covering rate limiting (rolling 10s window), XSS protection (HTML/script sanitization), message validation (500 char limit, whitespace), and message flow (broadcast, identity, ordering). 28 tests all passing. Tests focus on security boundaries and edge cases.
+📌 Chat test structure: Pure function tests for sanitization/validation logic, rate limit state machine tests, integration pattern tests. No mocks of GameRoom - tests isolated logic units. Server tests in `server/tests/`, frontend tests in `src/components/__tests__/`.
+📌 Chat security patterns: Server-side validation required (never trust client), rolling window rate limits (not fixed intervals), comprehensive XSS protection (remove all HTML tags + javascript: URLs + event handlers), trim whitespace before validation.

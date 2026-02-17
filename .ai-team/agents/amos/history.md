@@ -142,3 +142,20 @@
 
 **Status:** Build passes. Ready for frontend integration (Naomi) to display diplomatic relations and handle offer UI.
 📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.
+
+### Chat Feature Backend Design (2025-07-16)
+
+📌 Chat architecture: Ephemeral message broadcasting, no state storage, no persistence (MVP decision)
+📌 Chat message types: `send_chat` (client->server), `chat_message` (server->all clients), `chat_error` (validation feedback)
+📌 Chat validation: 500 char max, 5 messages per 10 seconds rate limit, trim whitespace, reject empty
+📌 Chat security: Server-authoritative, player identity from session, rate limiting prevents spam
+📌 Chat pattern: room.send('send_chat', {text}), room.onMessage('chat_message', callback), broadcast to all clients
+📌 Chat rate limiting: Map<sessionId, timestamps[]>, rolling 10-second window, cleanup on disconnect
+📌 Chat message ID: `${timestamp}-${sessionId.slice(0,8)}` for client dedup
+📌 Chat broadcast includes: playerId, playerName, playerColor (from PlayerSchema), text, timestamp, messageId
+📌 Chat handler location: GameRoom.registerMessageHandlers(), private handleChatMessage() method
+📌 Chat no persistence: New joiners see empty history (acceptable MVP), future: PostgreSQL chat_messages table
+📌 Chat no profanity filter: Out of scope for MVP, can add later if needed
+📌 Chat pattern matches: Follows existing diplomacy/territory control handler patterns for consistency
+
+📌 Team update (2025-01-22): Chat feature design consolidated across all layers (backend, frontend, systems integration, UI) — decided by Amos, Holden, Miller, Naomi

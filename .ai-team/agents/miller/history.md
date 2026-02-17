@@ -86,3 +86,16 @@
 
 📌 Team update (2026-02-17): Diplomacy system implemented per Phase 8 architecture — M2 complete
 📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.
+
+📌 Player identity: `player.id` (persistent) vs `sessionId` (ephemeral, Colyseus routing only)
+📌 Node ownership references use `player.id`, not `sessionId` — survives reconnects
+📌 PlayerSchema in `server/src/colyseus/schema.ts` — includes id, sessionId, name, color, connection status
+📌 DiplomaticRelation uses `player.id` pairs for relationship tracking
+📌 Event Log at `src/components/EventLog/EventLog.tsx` — displays simulation events from `GameWorld.eventQueue`
+📌 Event icons and labels defined in EventLog component — sourced from deterministic game events
+📌 Chat is NOT a simulation concern — belongs in networking (GameRoom) and UI (React components) layers
+📌 Chat should use `player.id` for sender identity, query game state (diplomacy, ownership) read-only
+📌 Future chat features (alliance chat, faction chat, proximity chat) can filter on game state without modifying it
+📌 Event-to-chat announcements possible (one-way: events → chat), but never inject chat into simulation events
+
+📌 Team update (2025-01-22): Chat feature design consolidated across all layers (backend, frontend, systems integration, UI) — decided by Amos, Holden, Miller, Naomi
