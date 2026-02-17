@@ -10,6 +10,8 @@ import { GameState, PlayerSchema, DiplomacySchema } from './schema';
 import { gameWorldToState, syncWorldToState } from './converters';
 import { GameLoop, createGameWorld, type TickResult } from '../shared';
 import { GameSpeed } from '../shared/game-types';
+import { randomUUID } from 'crypto';
+import xss from 'xss';
 
 /** Message types from client */
 export type ClientMessageType =
@@ -28,6 +30,7 @@ export type ClientMessageType =
   | { type: 'declare_war'; targetPlayerId: string }
   | { type: 'propose_peace'; targetPlayerId: string }
   | { type: 'accept_peace'; fromPlayerId: string }
+  | { type: 'send_chat'; content: string }
   | { type: 'player_action'; action: string; payload: Record<string, unknown> };
 
 /** Room configuration options */
@@ -57,6 +60,17 @@ const PLAYER_COLORS = [
   '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F',
 ];
 
+/** Chat rate limit configuration */
+const CHAT_RATE_LIMIT_MESSAGES = 5;
+const CHAT_RATE_LIMIT_WINDOW_MS = 10000; // 10 seconds
+const CHAT_MAX_LENGTH = 500;
+
+/** Chat rate limit tracking */
+interface ChatRateLimit {
+  messages: number[];
+  lastChecked: number;
+}
+
 /**
  * GameRoom - Main Colyseus room for game sessions
  * 
@@ -69,6 +83,7 @@ export class GameRoom extends Room<{ state: GameState }> {
   private activeClaims: Map<string, ClaimAction> = new Map();
   private pendingOffers: Map<string, DiplomaticOffer> = new Map();
   private usedColorIndices: Set<number> = new Set();
+  private chatRateLimits: Map<string, ChatRateLimit> = new Map();
 
   /**
    * Called when the room is created
@@ -140,6 +155,9 @@ export class GameRoom extends Room<{ state: GameState }> {
       
       // Remove any active claims from this player
       this.activeClaims.delete(client.sessionId);
+      
+      // Clean up chat rate limit tracking
+      this.chatRateLimits.delete(client.sessionId);
       
       // Allow reconnection for 30 seconds if not consented (browser closed, network issue)
       if (!consented) {
@@ -254,6 +272,11 @@ export class GameRoom extends Room<{ state: GameState }> {
 
     this.onMessage('accept_peace', (client, message: { fromPlayerId: string }) => {
       this.acceptPeace(client, message.fromPlayerId);
+    });
+
+    // Chat message handler
+    this.onMessage('send_chat', (client, message: { content: string }) => {
+      this.handleChatMessage(client, message);
     });
 
     // Generic player action (for future game commands)
@@ -778,5 +801,95 @@ export class GameRoom extends Room<{ state: GameState }> {
 
     player.lastActivityTick = this.state.currentTick;
     console.log(`[GameRoom] Peace established between ${fromPlayer?.name} and ${player.name}`);
+  }
+
+  /**
+   * Handle chat message from client
+   */
+  private handleChatMessage(client: Client, message: { content?: string }): void {
+    const player = this.state.players.get(client.sessionId);
+    
+    if (!player) {
+      client.send('chat_error', { error: 'Player not found' });
+      return;
+    }
+
+    // Validate message content exists
+    if (typeof message.content !== 'string') {
+      client.send('chat_error', { error: 'Invalid message format' });
+      return;
+    }
+
+    // Trim and validate message
+    const trimmedContent = message.content.trim();
+    
+    if (trimmedContent.length === 0) {
+      client.send('chat_error', { error: 'Message cannot be empty' });
+      return;
+    }
+    
+    if (trimmedContent.length > CHAT_MAX_LENGTH) {
+      client.send('chat_error', { 
+        error: `Message too long (max ${CHAT_MAX_LENGTH} characters)` 
+      });
+      return;
+    }
+
+    // Check rate limit
+    if (!this.checkChatRateLimit(client.sessionId)) {
+      client.send('chat_error', { 
+        error: `Rate limit exceeded (max ${CHAT_RATE_LIMIT_MESSAGES} messages per ${CHAT_RATE_LIMIT_WINDOW_MS / 1000} seconds)` 
+      });
+      return;
+    }
+
+    // Sanitize content using xss library
+    const sanitizedContent = xss(trimmedContent);
+
+    // Create and broadcast chat message
+    this.broadcast('chat_message', {
+      id: randomUUID(),
+      playerId: player.id,
+      playerName: player.name,
+      content: sanitizedContent,
+      timestamp: Date.now(),
+    });
+
+    // Update player activity
+    player.lastActivityTick = this.state.currentTick;
+
+    console.log(`[GameRoom] Chat from ${player.name}: ${sanitizedContent.substring(0, 50)}${sanitizedContent.length > 50 ? '...' : ''}`);
+  }
+
+  /**
+   * Check if client is within chat rate limit
+   */
+  private checkChatRateLimit(sessionId: string): boolean {
+    const now = Date.now();
+    let rateLimit = this.chatRateLimits.get(sessionId);
+
+    if (!rateLimit) {
+      rateLimit = {
+        messages: [],
+        lastChecked: now,
+      };
+      this.chatRateLimits.set(sessionId, rateLimit);
+    }
+
+    // Remove messages outside the window (rolling window)
+    rateLimit.messages = rateLimit.messages.filter(
+      timestamp => now - timestamp < CHAT_RATE_LIMIT_WINDOW_MS
+    );
+
+    // Check if under limit
+    if (rateLimit.messages.length >= CHAT_RATE_LIMIT_MESSAGES) {
+      return false;
+    }
+
+    // Add current message timestamp
+    rateLimit.messages.push(now);
+    rateLimit.lastChecked = now;
+
+    return true;
   }
 }
