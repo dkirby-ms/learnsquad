@@ -63,3 +63,5 @@
 📌 Chat feature tests: Comprehensive backend test suite covering rate limiting (rolling 10s window), XSS protection (HTML/script sanitization), message validation (500 char limit, whitespace), and message flow (broadcast, identity, ordering). 28 tests all passing. Tests focus on security boundaries and edge cases.
 📌 Chat test structure: Pure function tests for sanitization/validation logic, rate limit state machine tests, integration pattern tests. No mocks of GameRoom - tests isolated logic units. Server tests in `server/tests/`, frontend tests in `src/components/__tests__/`.
 📌 Chat security patterns: Server-side validation required (never trust client), rolling window rate limits (not fixed intervals), comprehensive XSS protection (remove all HTML tags + javascript: URLs + event handlers), trim whitespace before validation.
+
+📌 Team update (2025-02-19): Chat feature test strategy with 28 backend tests covering XSS, rate limiting, validation — decided by Drummer

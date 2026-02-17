@@ -2252,3 +2252,153 @@ This ensures we don't merge code that breaks the build pipeline.
 **What:** Established standard tsconfig.json configuration for Vite projects: `moduleResolution: "bundler"`, `module: "ESNext"`, `noEmit: true`, `allowImportingTsExtensions: true`.
 
 **Why:** The previous NodeNext configuration was incompatible with Vite's bundler-based module resolution. This standard configuration aligns with Vite best practices and eliminates build errors while maintaining strict type checking. The `noEmit` flag is critical since Vite handles all transpilation, not tsc.
+
+### 2025-02-19: Chat Feature Test Strategy
+
+**By:** Drummer (Quality Engineer)
+**Date:** 2025-02-19
+**Status:** Implemented
+
+**What:** Established comprehensive test suite for chat feature covering security (XSS protection, rate limiting), validation (length, whitespace), and message flow (broadcast, ordering, identity).
+
+**Why:** Chat is a user-facing feature with critical security implications. XSS vulnerabilities could allow attackers to inject malicious scripts. Rate limiting prevents spam and abuse. Message validation ensures system stability. All security boundaries must be tested before implementation.
+
+**Tests Created:**
+
+**Backend Tests (`server/tests/GameRoom.chat.test.ts`):**
+- 28 tests, all passing
+- XSS Protection (9 tests): HTML tag removal, script tag removal, event handler removal, javascript: URL removal
+- Message Validation (7 tests): Empty messages, length limits (500 chars), whitespace handling, Unicode/emoji
+- Rate Limiting (6 tests): Rolling 10-second window, 5 messages per window, per-player tracking, disconnect cleanup
+- Message Flow (3 tests): ID generation, timestamp ordering, metadata inclusion
+- Integration Patterns (3 tests): Client→Server→Broadcast flow, error responses, rate limit errors
+
+**Frontend Tests (`src/components/__tests__/ChatPanel.test.tsx`):**
+- Basic structure only (todo tests)
+- Will be implemented once ChatPanel component exists
+- Patterns established: accessibility, user interactions, XSS display protection
+
+**Implementation Added to GameRoom.ts:**
+- `handleChatMessage()`: Main message handler with validation, sanitization, rate limiting, broadcasting
+- `checkChatRateLimit()`: Rolling window rate limit tracker (5 messages per 10 seconds)
+- `sanitizeChatMessage()`: XSS protection (removes HTML tags, javascript: URLs, event handlers)
+- `clearChatRateLimit()`: Cleanup on disconnect
+- `send_chat` message handler registration
+
+**Key Testing Patterns:**
+1. Isolated Logic Tests — Test sanitization/validation functions directly without mocking GameRoom
+2. Pure Function Tests — Rate limiting logic tested as state machine without side effects
+3. Rolling Window Verification — Explicit tests that rate limit is rolling, not fixed intervals
+4. Security-First — Every attack vector tested (script tags, event handlers, encoded attacks)
+5. Edge Cases — Unicode, emoji, rapid-fire messages, concurrent users
+
+**Security Boundaries Enforced:**
+- Server-side validation only: Never trust client input
+- Comprehensive sanitization: Remove ALL HTML tags, not just dangerous ones
+- Per-player rate limits: Tracked by sessionId, independent across players
+- Disconnect cleanup: Rate limit state cleared to prevent memory leaks
+
+**Future Work:**
+- Frontend component tests (once ChatPanel implemented)
+- Integration tests with real Colyseus room (require server running)
+- Load testing (simulate 8 players all sending 5 messages simultaneously)
+- Profanity filtering (out of MVP scope)
+
+### 2026-02-17: Chat UI Component Architecture
+
+**By:** Naomi
+
+**What:** Built chat UI as four-component system with clear separation of concerns:
+1. RightNav — Tab container managing Events/Chat switching with unread badges
+2. ChatPanel — State manager coordinating MessageList and ChatInput
+3. MessageList — Display layer with auto-scroll intelligence and memo optimization
+4. ChatInput — Input handling with auto-grow, character limits, keyboard shortcuts
+
+**Why:** Followed EventLog pattern (container → list → items) but added RightNav for tab switching. Keeps EventLog unchanged with clean migration path. ChatPanel owns local UI state (input value, scroll position, last read ID) while RightNav manages tab state — matches React best practices.
+
+**Component Boundaries:**
+
+**RightNav** (Tab Container):
+- Manages active tab state (events/chat)
+- Renders EventLog or ChatPanel based on active tab
+- Shows unread count badge on Chat tab
+- Smooth tab transitions
+
+**ChatPanel** (State Manager):
+- Owns local UI state: input value, scroll position, last read message ID
+- Connects to `useChatMessages()` for message list
+- Connects to `room.send('send_chat')` for sending
+- Renders MessageList + ChatInput
+- Handles auto-scroll logic
+
+**MessageList** (Display Layer):
+- Receives `messages: ChatMessage[]` prop
+- Renders MessageItem for each message
+- Auto-scroll: Only activates when user is at bottom (within 50px threshold)
+- Debounced scroll handler (100ms for performance)
+- Prevents jarring scroll interruptions when user reading older messages
+
+**ChatInput** (Input Handling):
+- Auto-growing textarea (max ~4 lines)
+- Enter to send, Shift+Enter for newline
+- Character counter (X / 500)
+- Keyboard shortcuts: Enter (send), Shift+Enter (newline), Escape (blur)
+- Disabled when message empty or >500 chars
+
+**Styling Patterns:**
+- CSS Modules with component-scoped classes
+- Followed EventLog conventions: `container`, `header`, `content` pattern
+- Dark theme colors consistent with existing components
+- Custom scrollbar styling matches EventLog
+
+**Accessibility:**
+- Tab switching uses proper ARIA: `role="tablist"`, `aria-selected`
+- Message list uses `role="log"` with `aria-live="polite"` for screen reader announcements
+- Keyboard navigation fully supported
+- Color contrast: >4.5:1 ratio
+- Semantic HTML: `<ul>` for message list, `<li>` for messages
+
+**Performance Optimizations:**
+- MessageItem wrapped in React.memo to prevent unnecessary re-renders
+- Timestamp formatting is pure function (no side effects)
+- Scroll handler debounced (100ms)
+- Ready for virtual scrolling if needed (>100 messages)
+
+**Integration Points:**
+- ChatPanel uses placeholder data — ready to connect to `useChatMessages()` hook
+- `onSend` handler ready for `room.send('send_chat', { content })` call
+- ChatMessage interface matches design spec (id, playerId, playerName, playerColor, content, timestamp)
+- RightNav imports EventLog — no changes needed to existing component
+
+**Auto-scroll Implementation:**
+```
+ScrollPosition Tracking:
+- Maintain ref to message list container (scrollTop, scrollHeight, clientHeight)
+- Threshold: User at bottom if scrollTop > (scrollHeight - clientHeight - 50px)
+- On new message: Only auto-scroll if user was already at bottom
+
+Debounce Logic:
+- scroll event handler debounced 100ms
+- Prevents excessive state updates during rapid scrolling
+- Smooth performance with lots of messages
+```
+
+**Migration Path:**
+1. Create RightNav wrapper (new file)
+2. Move EventLog into RightNav
+3. Add Chat tab with ChatPanel inside
+4. Gradual: EventLog untouched, pure additive change
+5. Update GameWorld.tsx to use RightNav instead of direct EventLog
+
+**Future Considerations:**
+- Virtual scrolling (react-window) if >100 messages causes performance issues
+- "New messages" indicator when scrolled up (button to jump to bottom)
+- Input focus management (auto-focus on tab switch vs accessibility concerns)
+- Timestamp updates (currently static — may want interval refresh for "Just now" → "1m ago")
+- Message reactions (emoji picker)
+- Rich text formatting (markdown, code blocks)
+
+**Conclusion:**
+
+Four-component architecture provides clean separation of concerns, follows React best practices, and maintains consistency with existing EventLog pattern. Auto-scroll behavior is intelligent (respects user scrolling), performance is optimized (memo, debounce, ready for virtual scrolling), and accessibility is built-in (ARIA, keyboard nav, semantic HTML). Ready for implementation.
+

@@ -31,8 +31,12 @@
 
 **Chat UI Components (2026-02-17):** Built four-component chat system following EventLog patterns. RightNav is tabbed wrapper with Events/Chat tabs, unread badge positioning (absolute, top-right), active tab styling (bottom border + brighter bg). ChatPanel manages state with placeholder data, hooks for scroll/visibility. MessageList uses memo optimization, auto-scroll when at bottom (checkIfAtBottom within 50px), debounced scroll handler (100ms), relative timestamps ("Just now", "2m ago", "3h ago"). ChatInput implements auto-growing textarea (min 40px, max 120px), Enter to send / Shift+Enter for newline, character count visibility (show >400 or overlimit), shake animation on overlimit attempt. All components use CSS modules with dark theme colors matching EventLog (#141a26 bg, #e8eaed text, #6b7280 secondary, #3b82f6 accent). Accessibility: role="tablist", aria-selected, role="log" with aria-live="polite", keyboard nav support. Ready for Colyseus integration.
 
+**Chat Integration (2026-02-17):** Connected chat UI to Colyseus backend. Added `chatMessages: ChatMessage[]` to gameStateStore with `addChatMessage()` and `clearChatMessages()` actions (MAX_CHAT_HISTORY = 200). Added `room.onMessage('chat_message')` listener in useGameSocket, exports `sendChatMessage(content)` that calls `room.send('send_chat', { content })`. Chat messages cleared on disconnect. Created `useChatMessages()` hook in useGameState for component access (useSyncExternalStore pattern). ChatPanel now uses real data from store, connects send button to `sendChatMessage` from useGameSocket via RightNav prop drilling. GameWorld updated to use RightNav instead of EventLog directly. Pattern follows existing event history and player state management.
+
 ## Project Learnings (from import)
 
 - Learnings older than 2 weeks (before ~2026-02-03) have been archived to `history-archive.md`
 
 📌 Team update (2025-01-22): Chat feature design consolidated across all layers (backend, frontend, systems integration, UI) — decided by Amos, Holden, Miller, Naomi
+
+📌 Team update (2026-02-17): Chat UI component architecture (RightNav, ChatPanel, MessageList, ChatInput) with accessibility and performance optimization — decided by Naomi
