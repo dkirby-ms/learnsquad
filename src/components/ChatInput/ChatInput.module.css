@@ -1,0 +1,91 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e8eaed;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  resize: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.textarea::placeholder {
+  color: #6b7280;
+}
+
+.textarea.overlimit {
+  border-color: #ef4444;
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.charCount {
+  flex: 1;
+  font-size: 11px;
+  min-height: 16px;
+}
+
+.countWarning {
+  color: #fbbf24;
+}
+
+.countError {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.sendButton {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.sendButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.sendButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

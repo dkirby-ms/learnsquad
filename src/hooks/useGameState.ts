@@ -8,7 +8,7 @@ import { useSyncExternalStore } from 'react';
 import {
   gameStateStore,
 } from '../store/gameState';
-import type { Player, DiplomaticRelation, DiplomaticStatus } from '../store/gameState';
+import type { Player, DiplomaticRelation, DiplomaticStatus, ChatMessage } from '../store/gameState';
 import { GameWorld, GameEvent, GameSpeed, Tick, EntityId } from '../game/types';
 
 /**
@@ -103,6 +103,16 @@ export function usePlayer(playerId: EntityId | null): Player | undefined {
 }
 
 /**
+ * Hook to access the current player (the one belonging to this session).
+ */
+export function useCurrentPlayer(): Player | undefined {
+  return useSyncExternalStore(
+    (callback) => gameStateStore.subscribe(callback),
+    () => gameStateStore.getCurrentPlayer()
+  );
+}
+
+/**
  * Hook to access all diplomatic relations.
  */
 export function useDiplomaticRelations(): DiplomaticRelation[] {
@@ -161,4 +171,15 @@ export function useDiplomacy(playerId: EntityId | null): {
     getEnemies,
     getStatus,
   };
+}
+
+/**
+ * Hook to access chat messages.
+ * Re-renders when new messages arrive.
+ */
+export function useChatMessages(): readonly ChatMessage[] {
+  return useSyncExternalStore(
+    (callback) => gameStateStore.subscribe(callback),
+    () => gameStateStore.getChatMessages()
+  );
 }

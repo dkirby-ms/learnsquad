@@ -12,10 +12,10 @@
 import React, { useState, useMemo } from 'react';
 import styles from './GameWorld.module.css';
 import { useGameSocket, ConnectionStatus } from '../../hooks/index';
-import { useGameWorld, usePlayers, usePlayer, useDiplomacy } from '../../hooks/useGameState';
+import { useGameWorld, usePlayers, usePlayer, useDiplomacy, useCurrentPlayer } from '../../hooks/useGameState';
 import { GameControls } from '../GameControls/index';
 import { NodeView } from '../NodeView/index';
-import { EventLog } from '../EventLog/index';
+import { RightNav } from '../RightNav/index';
 import { PlayerList } from '../PlayerList/index';
 import { DiplomacyPanel } from '../DiplomacyPanel/index';
 import { Node, EntityId } from '../../game/types';
@@ -43,15 +43,16 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
     declareWar,
     proposePeace,
     activeClaimNodeId,
+    sendChatMessage,
   } = useGameSocket({ url: wsUrl, gameId });
 
   const world = useGameWorld();
   const players = usePlayers();
+  const currentPlayer = useCurrentPlayer();
   const [selectedNodeId, setSelectedNodeId] = useState<EntityId | null>(null);
-  const [eventLogCollapsed, setEventLogCollapsed] = useState(false);
 
-  // For now, we'll use the first player as the current player (until auth integration)
-  const currentPlayerId = players.length > 0 ? players[0].id : undefined;
+  // Use the current player's ID from the session
+  const currentPlayerId = currentPlayer?.id;
   const { getStatus: getDiplomaticStatus, getAllies, getEnemies } = useDiplomacy(currentPlayerId ?? null);
 
   // Debug: log world state on change
@@ -230,13 +231,9 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
         )}
       </main>
 
-      {/* Right Sidebar - Event Log */}
+      {/* Right Sidebar - RightNav (Events + Chat) */}
       <aside className={styles.rightSidebar}>
-        <EventLog
-          maxEvents={30}
-          collapsed={eventLogCollapsed}
-          onToggleCollapse={() => setEventLogCollapsed(!eventLogCollapsed)}
-        />
+        <RightNav onSendMessage={sendChatMessage} />
       </aside>
     </div>
   );

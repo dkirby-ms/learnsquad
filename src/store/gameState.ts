@@ -20,6 +20,9 @@ const MAX_EVENT_HISTORY = 100;
 /** Maximum number of tick snapshots to keep */
 const MAX_TICK_HISTORY = 10;
 
+/** Maximum number of chat messages to keep in history */
+const MAX_CHAT_HISTORY = 200;
+
 /** Player data synced from server */
 export interface Player {
   id: EntityId;
@@ -40,6 +43,16 @@ export interface DiplomaticRelation {
   player1Id: EntityId;
   player2Id: EntityId;
   status: DiplomaticStatus;
+}
+
+/** Chat message */
+export interface ChatMessage {
+  id: string;
+  playerId: string;
+  playerName: string;
+  playerColor: string;
+  content: string;
+  timestamp: number;
 }
 
 /** Tick snapshot for history */
@@ -63,6 +76,8 @@ class GameStateStore {
   private diplomaticRelations: Map<string, DiplomaticRelation> = new Map();
   private eventHistory: GameEvent[] = [];
   private tickHistory: TickSnapshot[] = [];
+  private chatMessages: ChatMessage[] = [];
+  private currentSessionId: string | null = null;
   private subscribers: Set<Subscriber> = new Set();
   
   // Cached arrays for useSyncExternalStore (must return stable references)
@@ -107,6 +122,23 @@ class GameStateStore {
   /** Get a specific player by ID */
   getPlayer(playerId: EntityId): Player | undefined {
     return this.players.get(playerId);
+  }
+
+  /** Get current session ID */
+  getCurrentSessionId(): string | null {
+    return this.currentSessionId;
+  }
+
+  /** Set current session ID */
+  setCurrentSessionId(sessionId: string | null): void {
+    this.currentSessionId = sessionId;
+    this.notify();
+  }
+
+  /** Get current player (the one belonging to this session) */
+  getCurrentPlayer(): Player | undefined {
+    if (!this.currentSessionId) return undefined;
+    return this.cachedPlayersArray.find(p => p.id === this.currentSessionId);
   }
 
   /** Get all diplomatic relations */
@@ -169,6 +201,23 @@ class GameStateStore {
     this.notify();
   }
 
+  /** Get chat messages */
+  getChatMessages(): readonly ChatMessage[] {
+    return this.chatMessages;
+  }
+
+  /** Add a chat message to history (from Colyseus 'chat_message' message) */
+  addChatMessage(message: ChatMessage): void {
+    this.chatMessages = [...this.chatMessages, message].slice(-MAX_CHAT_HISTORY);
+    this.notify();
+  }
+
+  /** Clear chat messages */
+  clearChatMessages(): void {
+    this.chatMessages = [];
+    this.notify();
+  }
+
   /** Clear all state (on disconnect) */
   clear(): void {
     this.world = null;
@@ -176,6 +225,8 @@ class GameStateStore {
     this.diplomaticRelations.clear();
     this.eventHistory = [];
     this.tickHistory = [];
+    this.chatMessages = [];
+    this.currentSessionId = null;
     // Reset cached arrays
     this.cachedPlayersArray = [];
     this.cachedRelationsArray = [];

@@ -33,6 +33,8 @@
 
 **Chat Integration (2026-02-17):** Connected chat UI to Colyseus backend. Added `chatMessages: ChatMessage[]` to gameStateStore with `addChatMessage()` and `clearChatMessages()` actions (MAX_CHAT_HISTORY = 200). Added `room.onMessage('chat_message')` listener in useGameSocket, exports `sendChatMessage(content)` that calls `room.send('send_chat', { content })`. Chat messages cleared on disconnect. Created `useChatMessages()` hook in useGameState for component access (useSyncExternalStore pattern). ChatPanel now uses real data from store, connects send button to `sendChatMessage` from useGameSocket via RightNav prop drilling. GameWorld updated to use RightNav instead of EventLog directly. Pattern follows existing event history and player state management.
 
+**Player Identity in Multiplayer (2026-02-17):** Fixed critical bug where `players[0]` was incorrectly assumed to be the current player — this breaks in multiplayer since join order doesn't match session ownership. Pattern: `room.sessionId` from Colyseus identifies the current connection, matches `player.id` in players array. Store now tracks `currentSessionId`, exposed via `useGameSocket` hook. Added `getCurrentPlayer()` to gameStateStore and `useCurrentPlayer()` hook for components. GameWorld and ChatPanel now use correct current player instead of first player. Key insight: In multiplayer, never assume array order — always match by explicit IDs from the server.
+
 ## Project Learnings (from import)
 
 - Learnings older than 2 weeks (before ~2026-02-03) have been archived to `history-archive.md`

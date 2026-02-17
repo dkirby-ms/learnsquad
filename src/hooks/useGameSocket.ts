@@ -38,6 +38,8 @@ export interface GameSocketReturn {
   status: ConnectionStatus;
   /** Error message if status is Error */
   error: string | null;
+  /** Current session ID (identifies this player's connection) */
+  currentSessionId: string | null;
   /** Connect to the server */
   connect: () => void;
   /** Disconnect from the server */
@@ -66,6 +68,8 @@ export interface GameSocketReturn {
   proposePeace: (targetPlayerId: string) => void;
   /** Accept peace proposal from another player */
   acceptPeace: (fromPlayerId: string) => void;
+  /** Send a chat message */
+  sendChatMessage: (content: string) => void;
   /** Last connection attempt time */
   lastConnectAttempt: number | null;
   /** Node ID currently being claimed by this player (local state for UI feedback) */
@@ -279,6 +283,7 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
   const [error, setError] = useState<string | null>(null);
   const [lastConnectAttempt, setLastConnectAttempt] = useState<number | null>(null);
   const [activeClaimNodeId, setActiveClaimNodeId] = useState<EntityId | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   const clearTimers = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -307,6 +312,11 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
       if (events && events.length > 0) {
         gameStateStore.addEvents(events);
       }
+    });
+
+    // Handle chat messages from server
+    room.onMessage('chat_message', (message: any) => {
+      gameStateStore.addChatMessage(message);
     });
 
     // Handle errors
@@ -352,6 +362,7 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
       } else {
         setStatus(ConnectionStatus.Disconnected);
         gameStateStore.clear();
+        gameStateStore.clearChatMessages();
       }
     });
   }, [mergedConfig.autoReconnect, mergedConfig.reconnectDelay, clearTimers]);
@@ -369,6 +380,8 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
       const room = await clientRef.current.reconnect(reconnectionTokenRef.current);
       roomRef.current = room;
       reconnectionTokenRef.current = room.reconnectionToken;
+      setCurrentSessionId(room.sessionId);
+      gameStateStore.setCurrentSessionId(room.sessionId);
       setupRoomListeners(room);
       setStatus(ConnectionStatus.Connected);
       setError(null);
@@ -408,6 +421,8 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
       
       roomRef.current = room;
       reconnectionTokenRef.current = room.reconnectionToken;
+      setCurrentSessionId(room.sessionId);
+      gameStateStore.setCurrentSessionId(room.sessionId);
       setupRoomListeners(room);
 
       setStatus(ConnectionStatus.Connected);
@@ -452,8 +467,10 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
       roomRef.current.leave();
       roomRef.current = null;
     }
+    setCurrentSessionId(null);
     setStatus(ConnectionStatus.Disconnected);
     gameStateStore.clear();
+    gameStateStore.clearChatMessages();
   }, [clearTimers]);
 
   const pause = useCallback(() => {
@@ -506,6 +523,10 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
     roomRef.current?.send('accept_peace', { fromPlayerId });
   }, []);
 
+  const sendChatMessage = useCallback((content: string) => {
+    roomRef.current?.send('send_chat', { content });
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -519,6 +540,7 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
   return {
     status,
     error,
+    currentSessionId,
     connect,
     disconnect,
     pause,
@@ -533,6 +555,7 @@ export function useGameSocket(config: GameSocketConfig = {}): GameSocketReturn {
     declareWar,
     proposePeace,
     acceptPeace,
+    sendChatMessage,
     lastConnectAttempt,
     activeClaimNodeId,
   };

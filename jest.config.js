@@ -26,6 +26,16 @@ module.exports = {
       preset: 'ts-jest',
     },
     {
+      displayName: 'server-tests',
+      testEnvironment: 'node',
+      testMatch: ['<rootDir>/server/tests/**/*.test.ts'],
+      preset: 'ts-jest',
+      roots: ['<rootDir>/server'],
+      transform: {
+        '^.+\\.ts$': 'ts-jest',
+      },
+    },
+    {
       displayName: 'integration',
       testEnvironment: 'node',
       testMatch: ['<rootDir>/src/__tests__/*.integration.test.ts'],
