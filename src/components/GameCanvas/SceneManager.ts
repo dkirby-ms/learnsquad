@@ -68,13 +68,14 @@ export class SceneManager {
     this.app = app;
     this.callbacks = callbacks;
 
-    // Create viewport for pan/zoom
+    // Create viewport for pan/zoom (PixiJS v8 uses app.renderer.events)
     this.viewport = new Viewport({
       screenWidth: app.screen.width,
       screenHeight: app.screen.height,
       worldWidth: 2000,
       worldHeight: 2000,
-    } as any); // Type compatibility issue with pixi.js v8 - safe to cast
+      events: app.renderer.events, // PixiJS v8 API
+    });
 
     // Configure viewport interactions
     this.viewport
@@ -83,7 +84,7 @@ export class SceneManager {
       .wheel()
       .decelerate();
 
-    this.app.stage.addChild(this.viewport as any);
+    this.app.stage.addChild(this.viewport);
 
     // Create layered scene graph
     this.backgroundLayer = new PIXI.Container();
@@ -91,10 +92,10 @@ export class SceneManager {
     this.nodesLayer = new PIXI.Container();
     this.overlayLayer = new PIXI.Container();
 
-    this.viewport.addChild(this.backgroundLayer as any);
-    this.viewport.addChild(this.connectionsLayer as any);
-    this.viewport.addChild(this.nodesLayer as any);
-    this.viewport.addChild(this.overlayLayer as any);
+    this.viewport.addChild(this.backgroundLayer);
+    this.viewport.addChild(this.connectionsLayer);
+    this.viewport.addChild(this.nodesLayer);
+    this.viewport.addChild(this.overlayLayer);
 
     // Create connection graphics (drawn once, reused)
     this.connectionGraphics = new PIXI.Graphics();
@@ -218,17 +219,16 @@ export class SceneManager {
       }
     }
 
-    circle.beginFill(fillColor);
-    circle.drawCircle(0, 0, NODE_RADIUS);
-    circle.endFill();
+    circle.circle(0, 0, NODE_RADIUS);
+    circle.fill({ color: fillColor });
 
     // Update selection ring
     const isSelected = this.selectedNodeId === node.id;
     ring.visible = isSelected;
     if (isSelected) {
       ring.clear();
-      ring.lineStyle(NODE_SELECTION_RING_WIDTH, COLORS.selectedRing);
-      ring.drawCircle(0, 0, NODE_RADIUS + 5);
+      ring.circle(0, 0, NODE_RADIUS + 5);
+      ring.stroke({ width: NODE_SELECTION_RING_WIDTH, color: COLORS.selectedRing });
     }
 
     // Update label
@@ -252,10 +252,10 @@ export class SceneManager {
 
       if (!fromNode || !toNode) continue;
 
-      // Draw line between nodes
-      this.connectionGraphics.lineStyle(CONNECTION_WIDTH, COLORS.connection);
+      // Draw line between nodes (PixiJS v8 API)
       this.connectionGraphics.moveTo(fromNode.position.x, fromNode.position.y);
       this.connectionGraphics.lineTo(toNode.position.x, toNode.position.y);
+      this.connectionGraphics.stroke({ width: CONNECTION_WIDTH, color: COLORS.connection });
     }
   }
 

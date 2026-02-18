@@ -16,11 +16,10 @@ jest.mock('pixi.js', () => {
   const MockGraphics = jest.fn().mockImplementation(function() {
     return {
       clear: jest.fn().mockReturnThis(),
-      // v7 API
-      beginFill: jest.fn().mockReturnThis(),
-      drawCircle: jest.fn().mockReturnThis(),
-      endFill: jest.fn().mockReturnThis(),
-      lineStyle: jest.fn().mockReturnThis(),
+      // v8 API
+      circle: jest.fn().mockReturnThis(),
+      fill: jest.fn().mockReturnThis(),
+      stroke: jest.fn().mockReturnThis(),
       moveTo: jest.fn().mockReturnThis(),
       lineTo: jest.fn().mockReturnThis(),
     };
@@ -89,6 +88,9 @@ describe('SceneManager - Initialization', () => {
       screen: { width: 800, height: 600 },
       renderer: {
         resize: jest.fn(),
+        events: {
+          domElement: document.createElement('canvas'),
+        },
       },
     };
   });
@@ -103,6 +105,7 @@ describe('SceneManager - Initialization', () => {
         screenHeight: 600,
         worldWidth: 2000,
         worldHeight: 2000,
+        events: expect.any(Object), // PixiJS v8 API
       })
     );
   });

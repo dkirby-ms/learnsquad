@@ -29,6 +29,9 @@ jest.mock('pixi.js', () => {
         screen: { width: 800, height: 600 },
         renderer: {
           resize: jest.fn(),
+          events: {
+            domElement: mockCanvas,
+          },
         },
         destroy: jest.fn(),
       };

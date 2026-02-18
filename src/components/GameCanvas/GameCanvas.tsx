@@ -44,7 +44,10 @@ export function GameCanvas({
     if (!canvasRef.current || appRef.current) return;
 
     const initPixi = async () => {
-      const app = new PIXI.Application({
+      const app = new PIXI.Application();
+      
+      // Initialize the application (required in PixiJS v8)
+      await app.init({
         width: canvasRef.current!.clientWidth,
         height: canvasRef.current!.clientHeight,
         backgroundColor: 0x0a0e17,
@@ -52,7 +55,7 @@ export function GameCanvas({
         autoDensity: true,
       });
 
-      canvasRef.current!.appendChild(app.view as HTMLCanvasElement);
+      canvasRef.current!.appendChild(app.canvas);
       appRef.current = app;
 
       // Create scene manager
