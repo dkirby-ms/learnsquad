@@ -103,6 +103,13 @@ export class SceneManager {
 
     // Center viewport on game area (nodes are positioned around 200-700 range)
     this.viewport.moveCenter(450, 350);
+
+    // Debug: Draw a test circle to verify rendering works
+    const testCircle = new PIXI.Graphics();
+    testCircle.circle(450, 350, 50);
+    testCircle.fill({ color: 0xff0000 });
+    this.backgroundLayer.addChild(testCircle);
+    console.log('[SceneManager] Test circle added at (450, 350)');
   }
 
   /**
@@ -110,6 +117,12 @@ export class SceneManager {
    * Performs incremental updates based on what changed.
    */
   updateWorld(world: GameWorld | null, players: Map<EntityId, Player>) {
+    console.log('[SceneManager] updateWorld called:', { 
+      hasWorld: !!world, 
+      nodeCount: world ? Object.keys(world.nodes).length : 0,
+      playerCount: players.size 
+    });
+    
     this.currentWorld = world;
     this.players = players;
 
@@ -159,6 +172,8 @@ export class SceneManager {
    * Create a new node sprite container.
    */
   private createNodeSprite(node: Node): PIXI.Container {
+    console.log('[SceneManager] Creating sprite for node:', node.id, 'at', node.position);
+    
     const container = new PIXI.Container();
     container.x = node.position.x;
     container.y = node.position.y;
@@ -174,10 +189,13 @@ export class SceneManager {
     (container as any)._ring = ring;
     ring.visible = false;
 
-    // Label
-    const label = new PIXI.Text(node.name, {
-      fontSize: 12,
-      fill: 0xe8eaed,
+    // Label (PixiJS v8 API - pass options object with style property)
+    const label = new PIXI.Text({
+      text: node.name,
+      style: {
+        fontSize: 12,
+        fill: 0xe8eaed,
+      },
     });
     label.anchor.set(0.5);
     label.y = LABEL_OFFSET_Y;
