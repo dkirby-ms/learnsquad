@@ -143,6 +143,10 @@ export class SceneManager {
    * Only updates sprites that have changed.
    */
   private updateNodes(nodes: Record<EntityId, Node>) {
+    console.log('[SceneManager] updateNodes called with:', Object.keys(nodes).length, 'nodes');
+    console.log('[SceneManager] Node keys:', Object.keys(nodes));
+    console.log('[SceneManager] First node sample:', Object.values(nodes)[0]);
+    
     const currentNodeIds = new Set(Object.keys(nodes));
     
     // Remove sprites for nodes that no longer exist
@@ -162,6 +166,7 @@ export class SceneManager {
         sprite = this.createNodeSprite(node);
         this.nodeSprites.set(node.id, sprite);
         this.nodesLayer.addChild(sprite);
+        console.log('[SceneManager] Added sprite for node:', node.id, 'to nodesLayer. Layer children count:', this.nodesLayer.children.length);
       } else {
         this.updateNodeSprite(sprite, node);
       }
