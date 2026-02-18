@@ -36,12 +36,13 @@ export function GameCanvas({
 }: GameCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
-  const sceneManagerRef = useRef<SceneManager | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [sceneManager, setSceneManager] = useState<SceneManager | null>(null);
 
   // Initialize PixiJS Application
   useEffect(() => {
     if (!canvasRef.current || appRef.current) return;
+
+    let isMounted = true;
 
     const initPixi = async () => {
       const app = new PIXI.Application();
@@ -61,46 +62,55 @@ export function GameCanvas({
         autoDensity: true,
       });
 
-      canvasRef.current!.appendChild(app.canvas);
+      // Check if still mounted after async
+      if (!isMounted || !canvasRef.current) return;
+
+      canvasRef.current.appendChild(app.canvas);
       appRef.current = app;
 
       // Create scene manager
-      const sceneManager = new SceneManager(app, {
+      const newSceneManager = new SceneManager(app, {
         onNodeClick: (nodeId) => {
           onNodeClick?.(nodeId);
         },
       });
-      sceneManagerRef.current = sceneManager;
 
-      setIsInitialized(true);
+      // Use state instead of ref so React properly tracks it
+      setSceneManager(newSceneManager);
     };
 
     initPixi();
 
     return () => {
-      // Cleanup on unmount
-      if (sceneManagerRef.current) {
-        sceneManagerRef.current.destroy();
-        sceneManagerRef.current = null;
+      isMounted = false;
+      // Cleanup handled in separate effect
+    };
+  }, [onNodeClick]);
+
+  // Cleanup sceneManager on unmount or when it changes
+  useEffect(() => {
+    return () => {
+      if (sceneManager) {
+        sceneManager.destroy();
       }
       if (appRef.current) {
         appRef.current.destroy(true);
         appRef.current = null;
       }
     };
-  }, [onNodeClick]);
+  }, [sceneManager]);
 
   // Handle window resize
   useEffect(() => {
-    if (!appRef.current || !sceneManagerRef.current) return;
+    if (!appRef.current || !sceneManager) return;
 
     const handleResize = () => {
-      if (!canvasRef.current || !sceneManagerRef.current) return;
+      if (!canvasRef.current || !sceneManager) return;
       
       const width = canvasRef.current.clientWidth;
       const height = canvasRef.current.clientHeight;
       
-      sceneManagerRef.current.resize(width, height);
+      sceneManager.resize(width, height);
     };
 
     window.addEventListener('resize', handleResize);
@@ -111,21 +121,20 @@ export function GameCanvas({
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [isInitialized]);
+  }, [sceneManager]);
 
   const hasFittedRef = useRef(false);
 
   // Sync world state to SceneManager
   useEffect(() => {
     console.log('[GameCanvas] Sync effect running:', { 
-      hasSceneManager: !!sceneManagerRef.current, 
-      isInitialized, 
+      hasSceneManager: !!sceneManager, 
       hasWorld: !!world,
       nodeCount: world ? Object.keys(world.nodes).length : 0
     });
     
-    if (!sceneManagerRef.current || !isInitialized) {
-      console.log('[GameCanvas] Sync effect early return - not ready');
+    if (!sceneManager) {
+      console.log('[GameCanvas] Sync effect early return - sceneManager not ready');
       return;
     }
 
@@ -133,25 +142,25 @@ export function GameCanvas({
     const playersMap = new Map(players.map(p => [p.id, p]));
 
     console.log('[GameCanvas] Calling updateWorld with', Object.keys(world?.nodes || {}).length, 'nodes');
-    sceneManagerRef.current.updateWorld(world, playersMap);
+    sceneManager.updateWorld(world, playersMap);
 
     // Fit to content on first load
     if (world && Object.keys(world.nodes).length > 0 && !hasFittedRef.current) {
-      sceneManagerRef.current.fitToContent();
+      sceneManager.fitToContent();
       hasFittedRef.current = true;
     }
-  }, [world, players, isInitialized]);
+  }, [world, players, sceneManager]);
 
   // Sync selected node to SceneManager
   useEffect(() => {
-    if (!sceneManagerRef.current || !isInitialized) return;
+    if (!sceneManager) return;
 
-    sceneManagerRef.current.setSelectedNode(selectedNodeId);
-  }, [selectedNodeId, isInitialized]);
+    sceneManager.setSelectedNode(selectedNodeId);
+  }, [selectedNodeId, sceneManager]);
 
   return (
     <div ref={canvasRef} className={styles.container}>
-      {!isInitialized && (
+      {!sceneManager && (
         <div className={styles.loading}>
           <span>Loading canvas...</span>
         </div>
