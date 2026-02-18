@@ -9,6 +9,18 @@
 
 <!-- Append new learnings below. Each entry is something lasting about the project. -->
 
+📌 PixiJS canvas test suite: Comprehensive tests for Phase 1 GameCanvas and SceneManager implementation (100 tests, all passing)
+📌 Canvas test coverage: Component lifecycle (mount/unmount/init), canvas creation, callback wiring, state sync, edge cases
+📌 Test structure: 4 test files covering GameCanvas (23 tests), SceneManager (37 tests), integration (19 tests), edge cases (21 tests)
+📌 Canvas test patterns: Mock PixiJS Application and pixi-viewport, test React-PixiJS bridge, verify cleanup on unmount
+📌 SceneManager test patterns: Verify node/connection rendering, sprite registry updates, selection handling, viewport resize
+📌 Integration tests: Full render cycle verification, state transition testing, error recovery patterns
+📌 Edge case coverage: Empty states, single nodes, many nodes (10/50/100/200), rapid interactions, extreme positions, invalid data
+📌 Canvas test mocking: PixiJS.Application mocked to return mock canvas, SceneManager mocked for component tests, real for integration
+📌 Performance baselines: 100 nodes rendering tested, 200 nodes stress test, rapid selection changes (50 updates), rapid world updates
+📌 Test file locations: `src/components/GameCanvas/__tests__/` with GameCanvas.test.tsx, SceneManager.test.tsx, integration, edge cases
+📌 Jest PixiJS config: Added transformIgnorePatterns for pixi.js/pixi-viewport, installed identity-obj-proxy for CSS module mocks
+
 📌 Testing priorities: Simulation determinism, multiplayer state sync, pausable real-time edge cases
 📌 Stack: Jest for unit/integration, likely Playwright for E2E, k6 or Artillery for load
 📌 Auth test contracts established: `src/__tests__/auth.test.ts` (backend), `src/components/Login/Login.test.tsx` (frontend)
@@ -65,3 +77,6 @@
 📌 Chat security patterns: Server-side validation required (never trust client), rolling window rate limits (not fixed intervals), comprehensive XSS protection (remove all HTML tags + javascript: URLs + event handlers), trim whitespace before validation.
 
 📌 Team update (2025-02-19): Chat feature test strategy with 28 backend tests covering XSS, rate limiting, validation — decided by Drummer
+📌 PixiJS mock patterns: MockContainer must expose both `children` array (for SceneManager) and internal `_children` (for tests). SceneManager debug logs access `container.children.length`.
+📌 Viewport mock requirements: Mock must include `setZoom()`, `moveCenter()`, `screenWidth`, `screenHeight` for `fitToContent()` method. Initial center at (450, 350).
+📌 SceneManager mock completeness: All GameCanvas component tests must mock `fitToContent()` method — added in canvas refactor, called on first world load.

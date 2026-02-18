@@ -18,6 +18,7 @@ import { NodeView } from '../NodeView/index';
 import { RightNav } from '../RightNav/index';
 import { PlayerList } from '../PlayerList/index';
 import { DiplomacyPanel } from '../DiplomacyPanel/index';
+import { GameCanvas } from '../GameCanvas/index';
 import { Node, EntityId } from '../../game/types';
 
 interface GameWorldProps {
@@ -91,14 +92,19 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
     ? players.find(p => p.id === selectedNode.ownerId)
     : undefined;
 
-  const handleNodeClick = (node: Node) => {
-    const newSelectedId = node.id === selectedNodeId ? null : node.id;
+  const handleNodeClick = (nodeId: EntityId) => {
+    const newSelectedId = nodeId === selectedNodeId ? null : nodeId;
     setSelectedNodeId(newSelectedId);
     
     // Send focus update to server
     if (newSelectedId) {
       updateFocus(newSelectedId);
     }
+  };
+
+  // Wrapper for NodeView which expects Node object
+  const handleNodeViewClick = (node: Node) => {
+    handleNodeClick(node.id);
   };
 
   const handleNodeHover = (nodeId: EntityId) => {
@@ -166,17 +172,14 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
       <main className={styles.main}>
         {status === ConnectionStatus.Connected && world ? (
           <>
-            {/* Placeholder for PixiJS canvas */}
+            {/* PixiJS Canvas */}
             <div className={styles.canvas}>
-              <div className={styles.canvasPlaceholder}>
-                <div className={styles.placeholderContent}>
-                  <span className={styles.placeholderIcon}>🎮</span>
-                  <p>Game Canvas</p>
-                  <p className={styles.placeholderSubtext}>
-                    PixiJS rendering will be added here
-                  </p>
-                </div>
-              </div>
+              <GameCanvas
+                world={world}
+                players={players}
+                selectedNodeId={selectedNodeId}
+                onNodeClick={handleNodeClick}
+              />
             </div>
 
             {/* Node Grid (temporary - will be replaced by canvas) */}
@@ -193,7 +196,7 @@ export function GameWorld({ gameId, wsUrl }: GameWorldProps) {
                       key={node.id}
                       node={node}
                       isSelected={node.id === selectedNodeId}
-                      onClick={handleNodeClick}
+                      onClick={handleNodeViewClick}
                       currentPlayerId={currentPlayerId}
                       ownerPlayer={nodeOwners[node.id]}
                       isAlly={isAllyNode}

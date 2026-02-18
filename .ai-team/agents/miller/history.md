@@ -99,3 +99,18 @@
 📌 Event-to-chat announcements possible (one-way: events → chat), but never inject chat into simulation events
 
 📌 Team update (2025-01-22): Chat feature design consolidated across all layers (backend, frontend, systems integration, UI) — decided by Amos, Holden, Miller, Naomi
+
+📌 PixiJS visualization system: Simulation layer defines visual state contract
+📌 Tick-synchronized state: Node ownership, resources, control points, diplomatic relations, discovery state
+📌 Client-side interpolation: Smooth animations, particle effects, camera movement, UI interactions
+📌 Visual state events: All GameEventType events trigger visual updates in rendering layer
+📌 Discovery system: Deterministic fog of war — discoveredNodes and discoveryTick tracked per player
+📌 LOD strategy: Strategic/Operational/Tactical zoom levels with culling and geometry simplification
+📌 Node visual properties: fillColor (owner), controlRing (claim progress), resourceBars (capacity)
+📌 Connection visual properties: lineColor (diplomacy), lineStyle (active/inactive), gatewayIcon (cooldown)
+📌 Diplomacy affects visuals: Allied nodes highlighted, enemy nodes show warning indicators
+📌 Event-driven rendering: PixiJS subscribes to tick events, updates triggered by events not polling
+📌 Visual state hooks: useNodesForVisualization(), useConnectionsForVisualization(), useTickProgress()
+📌 Separation principle: Simulation is authoritative, rendering is presentational — never poll, always react to events
+
+📌 Team update (2026-02-17): PixiJS Visualization System design consolidated into decisions.md. Tick-synchronized state requirements and game state model finalized. — decided by Holden, Naomi, Amos, Miller
