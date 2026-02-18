@@ -46,10 +46,16 @@ export function GameCanvas({
     const initPixi = async () => {
       const app = new PIXI.Application();
       
+      // Get dimensions with fallback
+      const width = canvasRef.current!.clientWidth || 800;
+      const height = canvasRef.current!.clientHeight || 600;
+      
+      console.log('[GameCanvas] Initializing with dimensions:', width, height);
+      
       // Initialize the application (required in PixiJS v8)
       await app.init({
-        width: canvasRef.current!.clientWidth,
-        height: canvasRef.current!.clientHeight,
+        width,
+        height,
         backgroundColor: 0x0a0e17,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
@@ -107,6 +113,8 @@ export function GameCanvas({
     };
   }, [isInitialized]);
 
+  const hasFittedRef = useRef(false);
+
   // Sync world state to SceneManager
   useEffect(() => {
     if (!sceneManagerRef.current || !isInitialized) return;
@@ -115,6 +123,12 @@ export function GameCanvas({
     const playersMap = new Map(players.map(p => [p.id, p]));
 
     sceneManagerRef.current.updateWorld(world, playersMap);
+
+    // Fit to content on first load
+    if (world && Object.keys(world.nodes).length > 0 && !hasFittedRef.current) {
+      sceneManagerRef.current.fitToContent();
+      hasFittedRef.current = true;
+    }
   }, [world, players, isInitialized]);
 
   // Sync selected node to SceneManager

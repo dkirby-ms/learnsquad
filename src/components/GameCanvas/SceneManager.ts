@@ -306,6 +306,39 @@ export class SceneManager {
   }
 
   /**
+   * Fit the viewport to show all nodes with padding.
+   */
+  fitToContent(padding: number = 50) {
+    if (!this.currentWorld || Object.keys(this.currentWorld.nodes).length === 0) {
+      return;
+    }
+
+    const nodes = Object.values(this.currentWorld.nodes);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    for (const node of nodes) {
+      if (!node) continue;
+      minX = Math.min(minX, node.position.x);
+      minY = Math.min(minY, node.position.y);
+      maxX = Math.max(maxX, node.position.x);
+      maxY = Math.max(maxY, node.position.y);
+    }
+
+    const contentWidth = maxX - minX + padding * 2;
+    const contentHeight = maxY - minY + padding * 2;
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    // Calculate scale to fit content
+    const scaleX = this.viewport.screenWidth / contentWidth;
+    const scaleY = this.viewport.screenHeight / contentHeight;
+    const scale = Math.min(scaleX, scaleY, 2); // Cap at 2x zoom
+
+    this.viewport.setZoom(scale);
+    this.viewport.moveCenter(centerX, centerY);
+  }
+
+  /**
    * Clear all rendered content.
    */
   clear() {
