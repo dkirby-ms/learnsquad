@@ -32,6 +32,8 @@
   },
   "dependencies": {
     "@colyseus/sdk": "^0.17.33",
+    "pixi.js": "^8.0.0",
+    "pixi-viewport": "^5.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   }
