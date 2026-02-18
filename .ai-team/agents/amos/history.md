@@ -67,4 +67,100 @@
 
 📌 Team update (2026-02-17): All changes must go through feature branches and PRs. Alex reviews all PRs before merge. No direct commits to master.
 
+### Chat Feature Backend Design (2025-07-16)
+
+📌 Chat architecture: Ephemeral message broadcasting, no state storage, no persistence (MVP decision)
+📌 Chat message types: `send_chat` (client->server), `chat_message` (server->all clients), `chat_error` (validation feedback)
+📌 Chat validation: 500 char max, 5 messages per 10 seconds rate limit, trim whitespace, reject empty
+📌 Chat security: Server-authoritative, player identity from session, rate limiting prevents spam
+📌 Chat pattern: room.send('send_chat', {text}), room.onMessage('chat_message', callback), broadcast to all clients
+📌 Chat rate limiting: Map<sessionId, timestamps[]>, rolling 10-second window, cleanup on disconnect
+📌 Chat message ID: `${timestamp}-${sessionId.slice(0,8)}` for client dedup
+📌 Chat broadcast includes: playerId, playerName, playerColor (from PlayerSchema), text, timestamp, messageId
+📌 Chat handler location: GameRoom.registerMessageHandlers(), private handleChatMessage() method
+📌 Chat no persistence: New joiners see empty history (acceptable MVP), future: PostgreSQL chat_messages table
+📌 Chat no profanity filter: Out of scope for MVP, can add later if needed
+📌 Chat pattern matches: Follows existing diplomacy/territory control handler patterns for consistency
+
+📌 Team update (2025-01-22): Chat feature design consolidated across all layers (backend, frontend, systems integration, UI) — decided by Amos, Holden, Miller, Naomi
+
+### 2025-07-16: Chat Message Handler Implementation
+
+**By:** Amos
+
+**What:** Implemented real-time chat message handling in GameRoom with rate limiting and XSS protection.
+
+**Changes:**
+
+**Message Handler:**
+- Added `send_chat` message handler to accept client messages with `{ content: string }`
+- Handler validates, sanitizes, rate-limits, and broadcasts messages
+- Returns error feedback to client on validation failures via `chat_error` message
+
+**Rate Limiting:**
+- Implemented rolling window rate limiter: 5 messages per 10 seconds per player
+- Uses `Map<sessionId, ChatRateLimit>` tracking message timestamps
+- Rejects excess messages with clear error feedback to client
+- Automatically cleans up rate limit data on player disconnect
+
+**Validation:**
+- Checks message content is non-empty (after trim)
+- Enforces 500 character maximum length
+- Returns specific error messages for each validation failure
+
+**XSS Sanitization:**
+- Uses `xss` npm package (v1.0.15) for content sanitization
+- Strips HTML tags, JavaScript protocols, and event handlers
+- Applied before broadcasting to prevent script injection attacks
+
+**Message Broadcasting:**
+- Broadcasts `chat_message` to all clients with structure:
+  - `id`: Unique message ID (crypto.randomUUID())
+  - `playerId`: Player's persistent ID
+  - `playerName`: Display name
+  - `content`: Sanitized message text
+  - `timestamp`: Unix timestamp (milliseconds)
+
+**Error Handling:**
+- `chat_error` messages sent to sender on:
+  - Empty message
+  - Message too long
+  - Rate limit exceeded
+  - Invalid format
+
+**Why:** 
+- Rate limiting prevents spam and DoS attacks at the server level
+- XSS sanitization protects all clients from malicious script injection
+- Rolling window rate limiter is memory-efficient and fair (no cooldown lockout)
+- Server-authoritative design ensures player identity can't be spoofed
+- `randomUUID()` from crypto module provides secure unique IDs without dependencies
+
+**Status:** Build passes. Ready for frontend integration by Naomi.
+
+**Learnings:**
+- XSS package provides robust sanitization with sensible defaults
+- Rolling window rate limiting (filtering old timestamps) is simpler than bucket algorithms
+- crypto.randomUUID() is native Node.js (v14.17+), no external UUID lib needed
+- Message IDs enable client-side deduplication and message tracking
+- Cleanup of rate limit Map on disconnect prevents memory leaks in long-running rooms
+
+### 2025-07-16: PixiJS Canvas Colyseus State Sync Architecture
+
+📌 **State sync design:** Colyseus MapSchema provides automatic delta encoding — only changed fields sent over wire
+📌 **Bandwidth math:** 500 nodes, 8 players, 1 tick/sec = ~2KB/sec per client (negligible with binary protocol)
+📌 **Room architecture:** Single room per game session (not spatial partitioning) — scales to 100+ players, 500+ nodes
+📌 **Client authority:** Players trigger actions (claim_node, update_focus), server validates and updates state
+📌 **Optimistic updates:** Visual feedback only (highlight, indicators), never mutate Colyseus state client-side
+📌 **Schema already sufficient:** NodeSchema (position, ownership, controlPoints, resources) covers PixiJS needs
+📌 **PixiJS integration:** Use Colyseus callbacks (onAdd/onChange/onRemove) to update sprites, don't poll state
+📌 **Tick rate 1 sec:** Correct for strategy games — PixiJS interpolates smooth visuals between discrete ticks
+📌 **Performance order:** PixiJS rendering bottlenecks first, then React re-renders, Colyseus sync scales well
+📌 **Minimize changes:** Only assign if value differs — Colyseus detects assignment as change even if same value
+📌 **Static data pattern:** Set once (node.position, connections, player.color), never change = zero sync cost
+📌 **Rate limiting extends:** Chat (5/10s) is model — can add to focus updates if spam becomes issue
+📌 **Scaling strategy:** Horizontal (Redis Presence, multiple Node processes) ready when needed, vertical first
+📌 **Fog of war future:** Add PlayerSchema.visibleNodeIds if needed, current schema doesn't block it
+📌 **Interest management:** Advanced optimization — only sync nodes near player focus (defer until proven needed)
+
+
 📌 Team update (2026-02-17): PixiJS Colyseus State Sync design consolidated into canonical decisions.md. Current schema and single-room architecture approved for MVP. Chat backend design finalized. — decided by Holden, Naomi, Amos, Miller
