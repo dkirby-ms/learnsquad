@@ -117,11 +117,22 @@ export function GameCanvas({
 
   // Sync world state to SceneManager
   useEffect(() => {
-    if (!sceneManagerRef.current || !isInitialized) return;
+    console.log('[GameCanvas] Sync effect running:', { 
+      hasSceneManager: !!sceneManagerRef.current, 
+      isInitialized, 
+      hasWorld: !!world,
+      nodeCount: world ? Object.keys(world.nodes).length : 0
+    });
+    
+    if (!sceneManagerRef.current || !isInitialized) {
+      console.log('[GameCanvas] Sync effect early return - not ready');
+      return;
+    }
 
     // Convert players array to Map for SceneManager
     const playersMap = new Map(players.map(p => [p.id, p]));
 
+    console.log('[GameCanvas] Calling updateWorld with', Object.keys(world?.nodes || {}).length, 'nodes');
     sceneManagerRef.current.updateWorld(world, playersMap);
 
     // Fit to content on first load
