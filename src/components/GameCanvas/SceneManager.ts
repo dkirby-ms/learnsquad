@@ -103,13 +103,6 @@ export class SceneManager {
 
     // Center viewport on game area (nodes are positioned around 200-700 range)
     this.viewport.moveCenter(450, 350);
-
-    // Debug: Draw a test circle to verify rendering works
-    const testCircle = new PIXI.Graphics();
-    testCircle.circle(450, 350, 50);
-    testCircle.fill({ color: 0xff0000 });
-    this.backgroundLayer.addChild(testCircle);
-    console.log('[SceneManager] Test circle added at (450, 350)');
   }
 
   /**
