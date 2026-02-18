@@ -77,3 +77,6 @@
 📌 Chat security patterns: Server-side validation required (never trust client), rolling window rate limits (not fixed intervals), comprehensive XSS protection (remove all HTML tags + javascript: URLs + event handlers), trim whitespace before validation.
 
 📌 Team update (2025-02-19): Chat feature test strategy with 28 backend tests covering XSS, rate limiting, validation — decided by Drummer
+📌 PixiJS mock patterns: MockContainer must expose both `children` array (for SceneManager) and internal `_children` (for tests). SceneManager debug logs access `container.children.length`.
+📌 Viewport mock requirements: Mock must include `setZoom()`, `moveCenter()`, `screenWidth`, `screenHeight` for `fitToContent()` method. Initial center at (450, 350).
+📌 SceneManager mock completeness: All GameCanvas component tests must mock `fitToContent()` method — added in canvas refactor, called on first world load.

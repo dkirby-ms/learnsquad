@@ -55,8 +55,6 @@ export function GameCanvas({
       const width = canvasRef.current!.clientWidth || 800;
       const height = canvasRef.current!.clientHeight || 600;
       
-      console.log('[GameCanvas] Initializing with dimensions:', width, height);
-      
       // Initialize the application (required in PixiJS v8)
       await app.init({
         width,
@@ -127,21 +125,13 @@ export function GameCanvas({
 
   // Sync world state to SceneManager
   useEffect(() => {
-    console.log('[GameCanvas] Sync effect running:', { 
-      hasSceneManager: !!sceneManager, 
-      hasWorld: !!world,
-      nodeCount: world ? Object.keys(world.nodes).length : 0
-    });
-    
     if (!sceneManager) {
-      console.log('[GameCanvas] Sync effect early return - sceneManager not ready');
       return;
     }
 
     // Convert players array to Map for SceneManager
     const playersMap = new Map(players.map(p => [p.id, p]));
 
-    console.log('[GameCanvas] Calling updateWorld with', Object.keys(world?.nodes || {}).length, 'nodes');
     sceneManager.updateWorld(world, playersMap);
 
     // Fit to content on first load

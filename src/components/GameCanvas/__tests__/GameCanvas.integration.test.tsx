@@ -61,6 +61,7 @@ jest.mock('pixi.js', () => {
           listeners[event].forEach(handler => handler(...args));
         }
       }),
+      children: children,
       _children: children,
       _listeners: listeners,
     };
@@ -103,6 +104,9 @@ jest.mock('pixi-viewport', () => {
         wheel: jest.fn().mockReturnThis(),
         decelerate: jest.fn().mockReturnThis(),
         moveCenter: jest.fn().mockReturnThis(),
+        setZoom: jest.fn().mockReturnThis(),
+        screenWidth: 800,
+        screenHeight: 600,
         destroy: jest.fn(),
       };
     }),

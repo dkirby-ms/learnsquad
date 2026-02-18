@@ -61,3 +61,50 @@
 - src/pages/GamePage.tsx - Import and env access changes (problematic)
 
 **Lesson:** Type declaration files are useless if tsconfig doesn't pick them up. Always run full build (`npm run build`) to verify TypeScript compilation, not just tests.
+
+### 2026-02-18: PR #11 Re-Review - PixiJS Canvas Still Failing
+
+**PR:** #11 "feat: Phase 1 PixiJS Game Canvas MVP"  
+**Branch:** feature/pixi-canvas-phase1 → master  
+**Verdict:** REQUEST CHANGES - Reassigned to Naomi
+
+**Context:** User requested re-review after claiming fixes for:
+- PixiJS v8 + pixi-viewport v6 (correct versions) ✅
+- Race condition fix (useState for sceneManager) ✅
+- Re-initialization loop fix (ref for callback) ✅
+- Debug code removed ❌
+
+**Issues Found:**
+
+1. **All GameCanvas tests failing** (4 suites, 122 tests)
+   - Root cause: console.log on SceneManager.ts:162 accesses `this.nodesLayer.children.length`
+   - Test mocks use `_children` internally but don't expose `children` property
+   - TypeError: Cannot read properties of undefined (reading 'length')
+
+2. **Debug code NOT fully removed**
+   - 10+ console.log statements remain in GameCanvas.tsx and SceneManager.ts
+   - Lines: GameCanvas.tsx (58, 130-137, 144), SceneManager.ts (113-117, 139-141, 162, 173)
+   - Commit b2c7b44 only removed test circle, not diagnostic logging
+
+3. **PR claims inaccurate**
+   - Claims "All existing tests passing (11 suites, 450 tests)"
+   - Reality: 11 pre-existing pass, but 4 NEW suites ALL fail
+   - This is misleading - new code must also pass tests
+
+**Baseline Verification:**
+- Master: 11 suites pass, 450 tests pass ✅
+- Build: Passes ✅
+- Dependencies: pixi.js@^8.16.0, pixi-viewport@^6.0.3 ✅
+
+**Key Files:**
+- src/components/GameCanvas/GameCanvas.tsx - React wrapper with lifecycle management
+- src/components/GameCanvas/SceneManager.ts - PixiJS rendering logic with sprite registry
+- src/components/GameCanvas/__tests__/*.test.tsx - Comprehensive test suites (all failing)
+
+**Architecture Review:**
+- Component separation good (React wrapper + pure PixiJS class)
+- State management correct (useState for sceneManager, ref for callbacks)
+- Performance patterns solid (sprite registry, incremental updates)
+- **But:** Debug logging breaks tests and adds noise
+
+**Lesson:** Console.log statements can break tests if they access properties not exposed by mocks. Always run full test suite, not just build. PR descriptions must accurately reflect ALL tests (including new ones), not just pre-existing tests.

@@ -60,6 +60,7 @@ jest.mock('../SceneManager', () => {
       updateWorld: jest.fn(),
       setSelectedNode: jest.fn(),
       resize: jest.fn(),
+      fitToContent: jest.fn(),
       destroy: jest.fn(),
       clear: jest.fn(),
     })),

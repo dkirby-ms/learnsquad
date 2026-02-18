@@ -2,19 +2,25 @@
 name: "code-review-build-verification"
 description: "Verify full build succeeds in code reviews, not just tests"
 domain: "code-review"
-confidence: "medium"
+confidence: "high"
 source: "earned"
 ---
 
 ## Context
 
-When reviewing Pull Requests with TypeScript changes, passing tests alone do not guarantee the code will build successfully. TypeScript type errors can exist even when JavaScript tests pass at runtime because tests execute compiled JavaScript, while builds verify type correctness at compile-time.
+When reviewing Pull Requests, **both tests AND build must pass**. Passing tests alone do not guarantee code quality:
+
+- **TypeScript PRs:** Tests execute compiled JavaScript at runtime, while builds verify type correctness at compile-time
+- **New test suites:** Tests for new features must also pass, not just pre-existing tests
+- **Debug code:** Console.log statements can break tests when accessing mocked object properties
 
 This skill applies to:
 - Any PR that modifies TypeScript files (.ts, .tsx)
 - PRs that add or modify type declarations (.d.ts files)
 - PRs that change TypeScript configuration (tsconfig.json)
 - PRs claiming to "fix build errors" or "fix type issues"
+- PRs that add new test suites alongside new features
+- PRs with third-party library integration (PixiJS, THREE.js, D3.js, etc.)
 
 ## Patterns
 
@@ -44,11 +50,29 @@ Tests passing but build failing indicates:
 
 ### 3. Review Checklist for TypeScript PRs
 
-- [ ] Run `npm test` - all tests pass
+- [ ] Run `npm test` - **ALL tests pass** (including new test suites)
+- [ ] Verify baseline - Check master branch test count vs PR test count
 - [ ] Run `npm run build` - TypeScript compilation succeeds
 - [ ] Check for `@ts-ignore` or `@ts-expect-error` - flag as code smells
 - [ ] Verify type declarations are properly referenced in tsconfig
 - [ ] Check that new type files are included in tsconfig paths/includes
+- [ ] Look for debug console.log statements - should be removed before merge
+
+### 4. Baseline Comparison
+
+Always establish baseline before reviewing:
+
+```bash
+# Checkout master
+git checkout master
+npm test  # Record: X suites pass, Y tests pass
+
+# Checkout PR branch
+git checkout feature/my-feature
+npm test  # Compare: Should have ≥X suites pass, ≥Y tests pass
+```
+
+**Red flag:** PR claims "all tests passing" but new test suites fail completely. This indicates the author only verified pre-existing tests, not the new ones.
 
 ## Examples
 
@@ -139,3 +163,34 @@ When a PR has passing tests but failing build:
 3. **Identify root cause** - Is it config, missing types, or workarounds?
 4. **Reassign if needed** - Route to appropriate agent (e.g., TypeScript expert)
 5. **Verify fix** - Next submission must show both tests AND build succeeding
+
+## Real Examples from This Project
+
+### PR #9 - TypeScript Build Failures (2025-01-20)
+
+**Issue:** Tests passed but build had 27 TypeScript errors  
+**Root cause:** Type declaration files added but not referenced in tsconfig.json  
+**Lesson:** Always run `npm run build` in addition to `npm test`
+
+### PR #11 - New Test Suites Failing (2026-02-18)
+
+**Issue:** 
+- Master: 11 test suites pass, 450 tests pass
+- PR branch: 11 pre-existing suites pass, but 4 NEW suites ALL fail (122 tests)
+- PR description claimed "All existing tests passing" - technically true but misleading
+
+**Root cause:** 
+- Console.log statements accessing `this.nodesLayer.children.length`
+- Test mocks didn't expose `.children` property (only `._children` internally)
+- Debug code should have been removed before merge
+
+**Lesson:** 
+- "All tests passing" must include NEW tests, not just pre-existing
+- Always verify baseline test count vs PR test count
+- Debug console.log can break tests when accessing mocked objects
+- See skill: `debug-code-test-compatibility`
+
+## Related Skills
+
+- `debug-code-test-compatibility`: How debug logging can break test mocks
+- `react-pixi-integration`: Testing patterns for PixiJS + React code

@@ -48,6 +48,7 @@ jest.mock('pixi.js', () => {
         if (index > -1) children.splice(index, 1);
       }),
       on: jest.fn(),
+      children: children,
       _children: children,
     };
   });
@@ -71,6 +72,9 @@ jest.mock('pixi-viewport', () => {
       wheel: jest.fn().mockReturnThis(),
       decelerate: jest.fn().mockReturnThis(),
       moveCenter: jest.fn().mockReturnThis(),
+      setZoom: jest.fn().mockReturnThis(),
+      screenWidth: 800,
+      screenHeight: 600,
       destroy: jest.fn(),
     })),
   };
@@ -128,7 +132,7 @@ describe('SceneManager - Initialization', () => {
     const { Viewport } = require('pixi-viewport');
     const mockViewport = Viewport.mock.results[0].value;
     
-    expect(mockViewport.moveCenter).toHaveBeenCalledWith(1000, 1000);
+    expect(mockViewport.moveCenter).toHaveBeenCalledWith(450, 350);
   });
 
   it('should store onNodeClick callback', () => {

@@ -110,12 +110,6 @@ export class SceneManager {
    * Performs incremental updates based on what changed.
    */
   updateWorld(world: GameWorld | null, players: Map<EntityId, Player>) {
-    console.log('[SceneManager] updateWorld called:', { 
-      hasWorld: !!world, 
-      nodeCount: world ? Object.keys(world.nodes).length : 0,
-      playerCount: players.size 
-    });
-    
     this.currentWorld = world;
     this.players = players;
 
@@ -136,10 +130,6 @@ export class SceneManager {
    * Only updates sprites that have changed.
    */
   private updateNodes(nodes: Record<EntityId, Node>) {
-    console.log('[SceneManager] updateNodes called with:', Object.keys(nodes).length, 'nodes');
-    console.log('[SceneManager] Node keys:', Object.keys(nodes));
-    console.log('[SceneManager] First node sample:', Object.values(nodes)[0]);
-    
     const currentNodeIds = new Set(Object.keys(nodes));
     
     // Remove sprites for nodes that no longer exist
@@ -159,7 +149,6 @@ export class SceneManager {
         sprite = this.createNodeSprite(node);
         this.nodeSprites.set(node.id, sprite);
         this.nodesLayer.addChild(sprite);
-        console.log('[SceneManager] Added sprite for node:', node.id, 'to nodesLayer. Layer children count:', this.nodesLayer.children.length);
       } else {
         this.updateNodeSprite(sprite, node);
       }
@@ -170,8 +159,6 @@ export class SceneManager {
    * Create a new node sprite container.
    */
   private createNodeSprite(node: Node): PIXI.Container {
-    console.log('[SceneManager] Creating sprite for node:', node.id, 'at', node.position);
-    
     const container = new PIXI.Container();
     container.x = node.position.x;
     container.y = node.position.y;
