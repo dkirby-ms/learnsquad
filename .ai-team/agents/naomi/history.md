@@ -35,6 +35,8 @@
 
 **Player Identity in Multiplayer (2026-02-17):** Fixed critical bug where `players[0]` was incorrectly assumed to be the current player — this breaks in multiplayer since join order doesn't match session ownership. Pattern: `room.sessionId` from Colyseus identifies the current connection, matches `player.id` in players array. Store now tracks `currentSessionId`, exposed via `useGameSocket` hook. Added `getCurrentPlayer()` to gameStateStore and `useCurrentPlayer()` hook for components. GameWorld and ChatPanel now use correct current player instead of first player. Key insight: In multiplayer, never assume array order — always match by explicit IDs from the server.
 
+**PixiJS Canvas Architecture (2026-02-17):** Designed React/PixiJS integration for game canvas visualization. Pattern: GameCanvas component wraps PixiJS Application instance, SceneManager class encapsulates all rendering logic, sprite registry (Map<EntityId, Sprite>) for incremental updates instead of full redraws. Scene organization uses layered containers (background → connections → nodes → units → overlay) for z-order and independent updates. NodeSprite class encapsulates single-node rendering (circle + owner ring + diplomacy glow + resources + label). Uses pixi-viewport library for pan/zoom with drag/pinch/wheel support. State flow: Colyseus update → gameStateStore → React props → SceneManager.updateWorld() → sprite.update() → only changed sprites redraw. Interaction flow: PixiJS pointer events → SceneManager callbacks → GameCanvas setState → React overlay (tooltips/menus). Performance: Sprite reuse via registry, dirty tracking to skip unchanged redraws, Graphics for batch-rendered connection lines, optional culling for 100+ nodes. Canvas placeholder in GameWorld.tsx (line 170) ready for replacement. Dependencies: pixi.js, pixi-viewport. Files to create: src/components/GameCanvas/{GameCanvas.tsx, SceneManager.ts, NodeSprite.ts, ConnectionRenderer.ts}. Node positions from server schema (node.position.x/y), coordinate system TBD with backend.
+
 ## Project Learnings (from import)
 
 - Learnings older than 2 weeks (before ~2026-02-03) have been archived to `history-archive.md`
@@ -42,3 +44,5 @@
 📌 Team update (2025-01-22): Chat feature design consolidated across all layers (backend, frontend, systems integration, UI) — decided by Amos, Holden, Miller, Naomi
 
 📌 Team update (2026-02-17): Chat UI component architecture (RightNav, ChatPanel, MessageList, ChatInput) with accessibility and performance optimization — decided by Naomi
+
+📌 Team update (2026-02-17): PixiJS Canvas Integration Design consolidated from 4 separate design docs. Naomi's React/PixiJS integration pattern is the canonical reference. Also Chat feature consolidated with UI pattern finalized. — decided by Holden, Naomi, Amos, Miller

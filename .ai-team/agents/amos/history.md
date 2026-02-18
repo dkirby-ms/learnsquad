@@ -220,3 +220,23 @@
 - Message IDs enable client-side deduplication and message tracking
 - Cleanup of rate limit Map on disconnect prevents memory leaks in long-running rooms
 
+### 2025-07-16: PixiJS Canvas Colyseus State Sync Architecture
+
+📌 **State sync design:** Colyseus MapSchema provides automatic delta encoding — only changed fields sent over wire
+📌 **Bandwidth math:** 500 nodes, 8 players, 1 tick/sec = ~2KB/sec per client (negligible with binary protocol)
+📌 **Room architecture:** Single room per game session (not spatial partitioning) — scales to 100+ players, 500+ nodes
+📌 **Client authority:** Players trigger actions (claim_node, update_focus), server validates and updates state
+📌 **Optimistic updates:** Visual feedback only (highlight, indicators), never mutate Colyseus state client-side
+📌 **Schema already sufficient:** NodeSchema (position, ownership, controlPoints, resources) covers PixiJS needs
+📌 **PixiJS integration:** Use Colyseus callbacks (onAdd/onChange/onRemove) to update sprites, don't poll state
+📌 **Tick rate 1 sec:** Correct for strategy games — PixiJS interpolates smooth visuals between discrete ticks
+📌 **Performance order:** PixiJS rendering bottlenecks first, then React re-renders, Colyseus sync scales well
+📌 **Minimize changes:** Only assign if value differs — Colyseus detects assignment as change even if same value
+📌 **Static data pattern:** Set once (node.position, connections, player.color), never change = zero sync cost
+📌 **Rate limiting extends:** Chat (5/10s) is model — can add to focus updates if spam becomes issue
+📌 **Scaling strategy:** Horizontal (Redis Presence, multiple Node processes) ready when needed, vertical first
+📌 **Fog of war future:** Add PlayerSchema.visibleNodeIds if needed, current schema doesn't block it
+📌 **Interest management:** Advanced optimization — only sync nodes near player focus (defer until proven needed)
+
+
+📌 Team update (2026-02-17): PixiJS Colyseus State Sync design consolidated into canonical decisions.md. Current schema and single-room architecture approved for MVP. Chat backend design finalized. — decided by Holden, Naomi, Amos, Miller

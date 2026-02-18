@@ -1,13 +1,5 @@
-### 2025-07-12: Server infrastructure established in server/ directory
-
-**By:** Amos
-
-**What:** Created Node.js/Express/TypeScript backend in `server/` directory with JWT-based authentication. Auth routes at `/api/auth/login` and `/api/auth/register`. Using in-memory user store for now.
-
-**Why:** Clean separation between client and server code. In-memory store keeps things simple for initial development — PostgreSQL integration will come when we have real persistence needs. Included register endpoint because login alone is useless without a way to create users.
-
-
 ### 2026-02-17: Chat Feature Design (consolidated)
+
 
 **By:** Unknown, Amos, Holden, Miller, Naomi
 
@@ -156,6 +148,7 @@ Chat feature is architecturally sound and ready for implementation. Comprehensiv
 
 ### 2025-07-13: Test-first auth contracts established
 
+
 **By:** Drummer
 
 **What:** Created comprehensive test suites for login functionality before implementation. Backend tests define API contract (`POST /api/auth/login`), frontend tests define component behavior. Tests include security checks (SQL injection, rate limiting, user enumeration prevention).
@@ -165,6 +158,7 @@ Chat feature is architecturally sound and ready for implementation. Comprehensiv
 
 ### 2025-07-14: CSS Modules for Component Styling
 
+
 **By:** Naomi
 
 **What:** Using CSS modules (*.module.css) for component-scoped styles rather than global CSS or CSS-in-JS.
@@ -173,6 +167,7 @@ Chat feature is architecturally sound and ready for implementation. Comprehensiv
 
 
 ### 2025-07-14: Using Entra External ID (CIAM) instead of regular Entra ID
+
 
 **By:** Amos
 
@@ -188,6 +183,7 @@ Chat feature is architecturally sound and ready for implementation. Comprehensiv
 
 
 ### Backend Migration: Custom WebSocket to Colyseus
+
 
 **By:** Amos
 **Date:** 2025-07-14
@@ -248,6 +244,7 @@ room.send("set_speed", { speed: 2 });
 
 ### 2025-07-14: Microsoft Entra ID OAuth added alongside local auth
 
+
 **By:** Amos
 
 **What:** Added OAuth authentication via Microsoft Entra ID (Azure AD). OAuth routes live at `/api/auth/oauth/*` — separate from existing email/password auth at `/api/auth/*`. Uses PKCE flow with @azure/msal-node.
@@ -266,6 +263,7 @@ room.send("set_speed", { speed: 2 });
 
 ### 2025-07-14: HttpOnly cookies for auth tokens
 
+
 **By:** Amos
 
 **What:** Replaced localStorage-based token storage with HttpOnly cookies for OAuth authentication. The OAuth callback now sets an HttpOnly cookie instead of passing the token in the redirect URL, and the `/me` endpoint reads from `req.cookies` instead of the Authorization header.
@@ -282,6 +280,7 @@ room.send("set_speed", { speed: 2 });
 
 ### 2025-07-14: WebSocket Protocol for Game State Sync
 
+
 **By:** Amos
 
 **What:** Established WebSocket protocol for multiplayer game state synchronization. Uses `ws` library, JSON messages, and delta encoding for tick updates.
@@ -295,6 +294,7 @@ room.send("set_speed", { speed: 2 });
 
 ### Connection Flow
 
+
 1. Connect to `ws://server:port/ws`
 2. Send `join_room` message with room ID
 3. Receive `room_joined` with initial game state
@@ -302,6 +302,7 @@ room.send("set_speed", { speed: 2 });
 
 
 ### Key Client → Server Messages
+
 
 ```typescript
 // Join a game room
@@ -326,6 +327,7 @@ room.send("set_speed", { speed: 2 });
 
 
 ### Key Server → Client Messages
+
 
 ```typescript
 // Full state (on join or resync)
@@ -373,15 +375,18 @@ room.send("set_speed", { speed: 2 });
 
 ### Type Definitions
 
+
 Import from `server/src/ws/types.ts` — includes `ClientMessage`, `ServerMessage`, and all individual message types.
 
 
 ### Tick Rate
 
+
 Default 1000ms (1 tick/second at normal speed). Configurable via `TICK_RATE` env var.
 
 
 ### 2026-02-16: User directive — Use Colyseus instead of custom WebSockets
+
 
 **By:** saitcho (via Copilot)
 **What:** Migrate from custom WebSocket implementation to Colyseus for multiplayer. Custom WebSockets will be a nightmare to maintain.
@@ -389,6 +394,7 @@ Default 1000ms (1 tick/second at normal speed). Configurable via `TICK_RATE` env
 
 
 ### 2025-07-15: OAuth tests migrated from Entra ID to Entra External ID (CIAM)
+
 
 **By:** Drummer
 
@@ -410,6 +416,7 @@ Default 1000ms (1 tick/second at normal speed). Configurable via `TICK_RATE` env
 
 ### 2025-07-14: Colyseus E2E test suite established with SDK-based state verification
 
+
 **By:** Drummer
 
 **What:** Rewrote `src/__tests__/colyseus.integration.test.ts` to use `@colyseus/sdk` v0.17 for proper schema deserialization. Added 20 comprehensive tests covering: matchmaking API, WebSocket connectivity, state sync (4 nodes with correct names/resources), pause/resume functionality, multiple client connections, and API endpoints.
@@ -419,6 +426,7 @@ Default 1000ms (1 tick/second at normal speed). Configurable via `TICK_RATE` env
 
 ### 2025-01-13: Connectivity test patterns established
 
+
 **By:** Drummer
 
 **What:** Phase 3 connectivity tests use `buildWorld()` helper for graph construction, determinism verification across 20 iterations for equal-cost paths, and performance baseline (100-node grid <100ms). Gateway tests verify state machine transitions with event emission at cooldown boundaries.
@@ -427,6 +435,7 @@ Default 1000ms (1 tick/second at normal speed). Configurable via `TICK_RATE` env
 
 
 ### 2025-07-14: Event system test patterns established
+
 
 **By:** Drummer
 
@@ -443,6 +452,7 @@ The depth limit and max-events-per-tick circuit breakers prevent runaway chain r
 
 
 ### 2025-07-14: OAuth/Entra ID test contracts established
+
 
 **By:** Drummer
 
@@ -463,6 +473,7 @@ Tests use mocks that mirror expected MSAL/Entra ID behavior. Amos and Naomi buil
 
 ### 2025-07-14: Resource system test patterns established
 
+
 **By:** Drummer
 
 **What:** Created comprehensive test suite for Phase 2 resource system at `src/game/__tests__/resources.test.ts`. 61 tests covering: regeneration, depletion, production/consumption, capacity limits, event generation, and determinism verification. Updated Jest config with new `game` project.
@@ -472,6 +483,7 @@ Tests use mocks that mirror expected MSAL/Entra ID behavior. Amos and Naomi buil
 
 ### 2025-07-15: Event system architecture with handler registry and depth limits
 
+
 **By:** Miller
 
 **What:** Implemented event-driven game state change system in `src/game/systems/events.ts` and `src/game/systems/handlers.ts`. Events process FIFO per tick, with chain reaction support via handler-spawned events. Circuit breakers prevent infinite loops (maxEventDepth=10, maxEventsPerTick=1000).
@@ -480,6 +492,7 @@ Tests use mocks that mirror expected MSAL/Entra ID behavior. Amos and Naomi buil
 
 
 ### 2025-07-14: Game simulation engine established in simulation/ directory
+
 
 **By:** Miller
 
@@ -516,6 +529,7 @@ simulation/
 
 ### 2025-07-14: Game simulation layer established in src/game/
 
+
 **By:** Miller
 
 **What:** Created the core game simulation module with pure, deterministic tick processing. Core types (`GameWorld`, `Node`, `Resource`, `Connection`) in `types.ts`. Model functions in `models/` directory. `GameLoop` class with `tick()` method for scheduled processing. All simulation logic is side-effect-free and returns new state.
@@ -524,6 +538,7 @@ simulation/
 
 
 ### 2025-07-14: A* pathfinding with pluggable cost functions
+
 
 **By:** Miller
 
@@ -534,6 +549,7 @@ simulation/
 
 ### 2025-07-14: Resource system architecture in src/game/systems/
 
+
 **By:** Miller
 
 **What:** Created `src/game/systems/` directory for game mechanics. The resource system (`resources.ts`) implements production/consumption/regeneration as pure functions. Producer and Consumer types are defined there. The `tickNode()` function in `models/node.ts` now delegates to `processNodeResources()` from the systems module.
@@ -542,6 +558,7 @@ simulation/
 
 
 ### 2025-07-14: Frontend architected for CIAM multi-provider support
+
 
 **By:** Naomi
 
@@ -556,6 +573,7 @@ simulation/
 
 
 ### 2025-07-14: Migrated frontend to Colyseus client
+
 
 **By:** Naomi
 
@@ -578,6 +596,7 @@ The gameState store is now simpler—it just receives full snapshots from the Co
 
 ### Frontend OAuth Architecture
 
+
 **By:** Naomi
 
 **What:** Implemented Entra ID OAuth frontend with AuthContext pattern. Login component now shows "Sign in with Microsoft" as primary auth method. Email/password form is hidden behind "Use email instead" toggle for dev fallback.
@@ -599,6 +618,7 @@ The gameState store is now simpler—it just receives full snapshots from the Co
 
 ### 2025-07-15: WebSocket Client Protocol
 
+
 **By:** Naomi
 
 **What:** Established the client-side WebSocket message protocol for game state sync. Server messages use typed enums: `WorldSnapshot` (full state), `WorldDelta` (incremental updates), `Events` (game events), `SpeedChanged` (pause/speed changes). Client messages: `JoinGame`, `Pause`, `Resume`, `SetSpeed`, `Ping`.
@@ -610,6 +630,7 @@ The gameState store is now simpler—it just receives full snapshots from the Co
 
 ### 2025-07-15: Client State Store Architecture
 
+
 **By:** Naomi
 
 **What:** Using a simple singleton store pattern with `useSyncExternalStore` instead of Redux/Zustand. The `gameStateStore` holds GameWorld, event history, and tick history. Components subscribe via hooks like `useGameWorld()`.
@@ -618,6 +639,7 @@ The gameState store is now simpler—it just receives full snapshots from the Co
 
 
 ### 2025-07-15: WebSocket Protocol Alignment
+
 
 **By:** Naomi
 
@@ -661,6 +683,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 
 ### 1. Player List Component Architecture
 
+
 **Decision:** Standalone `PlayerList` component in left sidebar, separate from GameControls.
 
 **Rationale:**
@@ -676,6 +699,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 
 ### 2. Focus Tracking Trigger
 
+
 **Decision:** Send `update_focus` only on node click, not on hover.
 
 **Rationale:**
@@ -688,6 +712,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 ---
 
 ### 3. Idle Detection Threshold
+
 
 **Decision:** 30 ticks of inactivity = idle state.
 
@@ -705,6 +730,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 
 ### 4. Node Ownership Visual Design
 
+
 **Decision:** Colored left border (3px solid) matching player color + owner name in text.
 
 **Rationale:**
@@ -720,6 +746,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 ---
 
 ### 5. Claim Progress Bar Implementation
+
 
 **Decision:** Progress bar UI implemented but hardcoded to 0% until backend provides data.
 
@@ -738,6 +765,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 
 ### 6. Claim/Abandon Button Placement
 
+
 **Decision:** Buttons only shown in selected node detail panel (`showControls={true}`), not on every node card.
 
 **Rationale:**
@@ -752,6 +780,7 @@ Phase 8a requires implementing player presence and territory control UI to enabl
 ---
 
 ### 7. Current Player ID Resolution
+
 
 **Decision:** Temporarily use first player in players array as current player.
 
@@ -776,6 +805,7 @@ const currentPlayerId = user?.id;
 
 ### 8. Player Color Storage
 
+
 **Decision:** Color stored as hex string in player data, applied via inline styles.
 
 **Rationale:**
@@ -794,6 +824,7 @@ const currentPlayerId = user?.id;
 
 ### 9. State Management Pattern
 
+
 **Decision:** Extend existing `gameStateStore` with player data, no separate store.
 
 **Rationale:**
@@ -809,6 +840,7 @@ const currentPlayerId = user?.id;
 ---
 
 ### 10. Message Protocol Alignment
+
 
 **Decision:** Use message names from Holden's architecture: `update_focus`, `claim_node`, `abandon_node`.
 
@@ -928,9 +960,11 @@ This phase adds the final core multiplayer features: player interactions, territ
 ## System 1: Player Presence
 
 ### Problem
+
 Players need to see who else is online and where they're focused in the game world.
 
 ### Solution
+
 
 **Schema additions** (server/src/colyseus/schema.ts):
 ```typescript
@@ -976,11 +1010,13 @@ export class PlayerSchema extends Schema {
 
 ### How systems connect:
 
+
 1. **Presence + Territory**: Players see where enemies are focusing → can contest those nodes
 2. **Territory + Diplomacy**: Allied players cannot contest each other's nodes (validation in `processTerritoryClaims`)
 3. **Diplomacy + Presence**: Allied players see extended info (resource levels on ally nodes)
 
 ### Miller (Game Systems)
+
 
 **M1**: Territory claiming system
 - [ ] Create `src/game/systems/territory.ts`
@@ -1006,6 +1042,7 @@ export class PlayerSchema extends Schema {
 ---
 
 ### Amos (Backend)
+
 
 **A1**: Schema updates
 - [ ] Add fields to `PlayerSchema` (name, color, focusedNodeId, lastActivityTick)
@@ -1042,6 +1079,7 @@ export class PlayerSchema extends Schema {
 ---
 
 ### Naomi (Frontend)
+
 
 **N1**: Player presence UI
 - [ ] Add online players sidebar (list with name, color, idle status)
@@ -1080,12 +1118,14 @@ export class PlayerSchema extends Schema {
 ## Security & Validation
 
 ### Server-side checks (Amos):
+
 1. **Claim validation**: Player can only claim nodes they can reach (via pathfinding)
 2. **Diplomacy validation**: Can't ally/war with disconnected players
 3. **Action rate limiting**: Max 1 claim action per second per player
 4. **Resource requirements**: Future extension — require resources to claim (not in MVP)
 
 ### Client-side UX (Naomi):
+
 1. **Disable buttons**: Gray out "Claim" if node unreachable
 2. **Confirm destructive actions**: Modal for "Declare War"
 3. **Optimistic UI**: Show claim progress immediately, rollback if server rejects
@@ -1095,16 +1135,19 @@ export class PlayerSchema extends Schema {
 ## Testing Strategy
 
 ### Unit tests (Drummer + Miller):
+
 - Territory system: 20 test cases covering all claim scenarios
 - Diplomacy system: 15 test cases for state transitions
 - Edge cases: simultaneous claims, invalid targets, disconnected players
 
 ### Integration tests (Drummer + Amos):
+
 - Multi-client claiming: 2 clients claim same node, verify contested state
 - Alliance flow: Client A offers, Client B accepts, verify both see allied status
 - War and contest: Client A at war with B, A contests B's node, verify decrement
 
 ### E2E tests (Drummer + Naomi):
+
 - Full gameplay loop: join → claim → ally → war → peace
 - UI state sync: verify frontend shows correct ownership after claims
 - Reconnection: player disconnects mid-claim, verify claim persists or cancels correctly
@@ -1114,6 +1157,7 @@ export class PlayerSchema extends Schema {
 ## Migration Path
 
 ### Phase 8a (Week 1): Territory
+
 - Miller: M1, M3
 - Amos: A1, A2, A3
 - Naomi: N1, N2
@@ -1121,6 +1165,7 @@ export class PlayerSchema extends Schema {
 **Milestone**: Players can claim nodes and see ownership
 
 ### Phase 8b (Week 2): Diplomacy
+
 - Miller: M2
 - Amos: A4
 - Naomi: N3, N4
@@ -1128,6 +1173,7 @@ export class PlayerSchema extends Schema {
 **Milestone**: Players can form alliances and declare wars
 
 ### Phase 8c (Week 3): Polish & Testing
+
 - All: A5, N5, integration tests
 - Drummer: E2E test suite
 
@@ -1214,6 +1260,7 @@ Phase 8 requires a territory claiming system that allows players to claim and co
 
 ### M1 - Territory System Core
 
+
 Created `src/game/systems/territory.ts` with the following components:
 
 **Core Function:**
@@ -1243,6 +1290,7 @@ Created `src/game/systems/territory.ts` with the following components:
 
 ### M3 - Game Loop Integration
 
+
 Updated `src/game/loop.ts` to integrate territory processing:
 
 **Changes to `processTick()`:**
@@ -1268,6 +1316,7 @@ export function processTick(
 
 ### Type Extensions
 
+
 Updated `src/game/types.ts`:
 
 **Node interface:**
@@ -1281,6 +1330,7 @@ Updated `src/game/types.ts`:
 
 ### Test Updates
 
+
 Fixed `src/game/__tests__/territory.test.ts` to match new signatures:
 - Added `tick` parameter to all `processTerritoryClaims()` calls
 - Fixed optional `controlPoints` handling with null coalescing
@@ -1290,6 +1340,7 @@ Fixed `src/game/__tests__/territory.test.ts` to match new signatures:
 ## Design Decisions
 
 ### 1. Optional Control Points Fields
+
 
 **Decision:** Made `controlPoints` and `maxControlPoints` optional on Node interface.
 
@@ -1308,6 +1359,7 @@ Fixed `src/game/__tests__/territory.test.ts` to match new signatures:
 
 ### 2. Server-Authoritative Claims
 
+
 **Decision:** `activeClaims` array passed to `processTick()` from server (GameRoom).
 
 **Rationale:**
@@ -1324,6 +1376,7 @@ Fixed `src/game/__tests__/territory.test.ts` to match new signatures:
 
 ### 3. Phase Ordering in Game Loop
 
+
 **Decision:** Territory claims processed BEFORE resource regeneration.
 
 **Rationale:**
@@ -1336,6 +1389,7 @@ Fixed `src/game/__tests__/territory.test.ts` to match new signatures:
 - Rejected: Would delay resource benefits of capturing node by one tick
 
 ### 4. Multi-Way Contested State
+
 
 **Decision:** Multiple players claiming neutral node = contested with no progress.
 
@@ -1350,6 +1404,7 @@ Fixed `src/game/__tests__/territory.test.ts` to match new signatures:
 - Could add "highest claimant wins" in future if needed
 
 ### 5. Control Point Constants
+
 
 **Decision:** Exported as constants: `MAX_CONTROL_POINTS`, `NEUTRAL_CLAIM_RATE`, `CONTESTED_DRAIN_RATE`.
 
@@ -1379,6 +1434,7 @@ All tests pass with updated signatures.
 ## Integration for Other Team Members
 
 ### For Amos (Backend)
+
 
 **GameRoom Changes Needed:**
 
@@ -1423,6 +1479,7 @@ onTick() {
 ```
 
 ### For Naomi (Frontend)
+
 
 **UI Integration:**
 
@@ -1512,6 +1569,7 @@ Implemented backend infrastructure for Phase 8a territory control and player pre
 
 ### A1 — Schema Updates
 
+
 **PlayerSchema additions:**
 ```typescript
 @type('string') name: string = '';
@@ -1531,6 +1589,7 @@ Implemented backend infrastructure for Phase 8a territory control and player pre
 
 ### A2 — Player Presence Handlers
 
+
 **Message handlers implemented:**
 1. `update_focus` — Updates `player.focusedNodeId` when player views a node
 2. `player_activity` — Updates `player.lastActivityTick` to current tick (generic activity ping)
@@ -1542,6 +1601,7 @@ Implemented backend infrastructure for Phase 8a territory control and player pre
 - Fallback: Generates random hex color if all 8 palette colors in use
 
 ### A3 — Territory Control Handlers
+
 
 **Data structures:**
 ```typescript
@@ -1576,6 +1636,7 @@ private activeClaims: Map<string, ClaimAction>
 
 ### 1. Control Points Increment/Decrement Rates
 
+
 **Decision:** +10/tick for claiming, -5/tick for contesting  
 **Rationale:**  
 - Neutral claim takes 10 ticks (~10 seconds at normal speed) — gives other players reaction time
@@ -1587,6 +1648,7 @@ private activeClaims: Map<string, ClaimAction>
 - Resource costs (deferred to post-MVP)
 
 ### 2. Color Assignment Strategy
+
 
 **Decision:** Predefined palette + random fallback  
 **Rationale:**
@@ -1601,6 +1663,7 @@ private activeClaims: Map<string, ClaimAction>
 
 ### 3. Activity Tracking Granularity
 
+
 **Decision:** Store `lastActivityTick` (tick number) not timestamp  
 **Rationale:**
 - Tick-based aligns with game simulation clock
@@ -1612,6 +1675,7 @@ private activeClaims: Map<string, ClaimAction>
 - Separate idle flag (requires extra state management)
 
 ### 4. Server-Authoritative Claims
+
 
 **Decision:** All claim processing happens in `processClaims()` during tick  
 **Rationale:**
@@ -1625,6 +1689,7 @@ private activeClaims: Map<string, ClaimAction>
 
 ### 5. Single Active Claim Per Player
 
+
 **Decision:** `activeClaims` map uses sessionId as key (one claim per player)  
 **Rationale:**
 - Simplifies initial implementation
@@ -1636,6 +1701,7 @@ private activeClaims: Map<string, ClaimAction>
 ## Integration Points
 
 ### For Naomi (Frontend):
+
 
 **New message types to send:**
 ```typescript
@@ -1664,6 +1730,7 @@ room.state.nodes.forEach(node => {
 - Status badges: 'Neutral', 'Claimed by X', 'Contested'
 
 ### For Miller (Game Simulation):
+
 
 **Current implementation:**
 - Territory logic lives in GameRoom, not game engine
@@ -1753,6 +1820,7 @@ Phase 8 requires diplomacy features for multiplayer interactions. Players need t
 
 ### 1. DiplomacyPanel Component Structure
 
+
 **Decision:** Standalone panel component in left sidebar, below PlayerList.
 
 **Rationale:**
@@ -1767,6 +1835,7 @@ Phase 8 requires diplomacy features for multiplayer interactions. Players need t
 - Toast notifications for player feedback
 
 ### 2. Diplomatic Status Rules
+
 
 **Decision:** Strict state machine for diplomacy actions:
 - Can only ally with neutral players
@@ -1785,6 +1854,7 @@ Phase 8 requires diplomacy features for multiplayer interactions. Players need t
 
 ### 3. Visual Indicators for Allied/Enemy Nodes
 
+
 **Decision:** Use box-shadow glow and emoji badges for node diplomatic status:
 - Allied nodes: green glow + 🤝 badge
 - Enemy nodes: red glow + ⚔️ badge
@@ -1802,6 +1872,7 @@ Phase 8 requires diplomacy features for multiplayer interactions. Players need t
 - Icon overlays on canvas (deferred to PixiJS phase)
 
 ### 4. Diplomacy State Management
+
 
 **Decision:** Store diplomatic relations in gameState with bidirectional key mapping.
 
@@ -1823,6 +1894,7 @@ interface DiplomaticRelation {
 
 ### 5. Toast Notification System
 
+
 **Decision:** Simple DOM-based toast system with 4-second timeout, no external library.
 
 **Rationale:**
@@ -1836,6 +1908,7 @@ interface DiplomaticRelation {
 - In-game event log only (rejected: easy to miss)
 
 ### 6. Message Protocol
+
 
 **Decision:** Added 6 new message types to useGameSocket:
 - `offer_alliance`, `accept_alliance`, `reject_alliance`
@@ -1934,6 +2007,7 @@ Created `src/game/systems/diplomacy.ts` with the following components:
 
 ### Types
 
+
 - **DiplomaticStatus** enum: `Neutral`, `Allied`, `War`
 - **DiplomaticAction** enum: `OfferAlliance`, `AcceptAlliance`, `RejectAlliance`, `DeclareWar`, `ProposePeace`, `AcceptPeace`
 - **DiplomaticRelation**: relationship between two players with status and establishedTick
@@ -1941,6 +2015,7 @@ Created `src/game/systems/diplomacy.ts` with the following components:
 - **GameWorldWithDiplomacy**: extends GameWorld with diplomaticRelations Map and pendingOffers array
 
 ### Core Functions
+
 
 **`getDiplomaticStatus(world, player1Id, player2Id)`**
 - Looks up current relationship status
@@ -1967,12 +2042,14 @@ Created `src/game/systems/diplomacy.ts` with the following components:
 
 ### Helper Functions
 
+
 - `areAllied(world, player1Id, player2Id)`: boolean check
 - `areAtWar(world, player1Id, player2Id)`: boolean check
 - `getAllDiplomaticRelations(world)`: get all relations
 - `getPendingOffersFor(world, playerId)`: get pending offers for a player
 
 ### Event Types
+
 
 Added to `src/game/types.ts`:
 - `AllianceOffered` - when alliance offer is made
@@ -1986,6 +2063,7 @@ Added to `src/game/types.ts`:
 
 ### 1. Asymmetric Actions
 
+
 **Decision:** Alliance and peace require acceptance, war does not.
 
 **Rationale:**
@@ -1995,6 +2073,7 @@ Added to `src/game/types.ts`:
 - Creates interesting gameplay: you can't force someone to be your ally
 
 ### 2. Pending Offers Storage
+
 
 **Decision:** Store pending offers in array, not as part of relationship.
 
@@ -2006,6 +2085,7 @@ Added to `src/game/types.ts`:
 
 ### 3. Consistent Key Ordering
 
+
 **Decision:** Always order player IDs alphabetically in relation keys.
 
 **Rationale:**
@@ -2015,6 +2095,7 @@ Added to `src/game/types.ts`:
 - Deterministic behavior regardless of query order
 
 ### 4. Validation Before Application
+
 
 **Decision:** Separate validation and application logic.
 
@@ -2026,6 +2107,7 @@ Added to `src/game/types.ts`:
 
 ### 5. War Requires Claimed Nodes
 
+
 **Decision:** Both players must have at least one claimed node to declare war.
 
 **Rationale:**
@@ -2035,6 +2117,7 @@ Added to `src/game/types.ts`:
 - Forces players to establish presence before engaging in conflict
 
 ### 6. Immutable Data Structures
+
 
 **Decision:** Clone relations Map and offers array before modifications.
 
@@ -2061,6 +2144,7 @@ All tests pass with 100% coverage of main logic paths.
 
 ### Architecture Choices
 
+
 1. **DiplomacySchema as State**
    - Stored in `MapSchema<DiplomacySchema>` on GameState
    - Key format: `"{playerId1}-{playerId2}"` (sorted alphabetically)
@@ -2086,6 +2170,7 @@ All tests pass with 100% coverage of main logic paths.
 
 ### Why This Design?
 
+
 **Pros:**
 - Separates transient offers from persistent state
 - Consistent relation IDs prevent duplication
@@ -2102,6 +2187,7 @@ All tests pass with 100% coverage of main logic paths.
 
 ### Schema Addition
 
+
 ```typescript
 export class DiplomacySchema extends Schema {
   @type('string') id: string = '';              // "{playerId1}-{playerId2}" (sorted)
@@ -2114,6 +2200,7 @@ export class DiplomacySchema extends Schema {
 
 ### Message Handlers
 
+
 - `offer_alliance` → Creates pending offer, sends `alliance_offer` event
 - `accept_alliance` → Updates relation to 'allied', sends `alliance_formed`
 - `reject_alliance` → Removes pending offer, sends `alliance_rejected`
@@ -2122,6 +2209,7 @@ export class DiplomacySchema extends Schema {
 - `accept_peace` → Updates relation to 'neutral', sends `peace_established`
 
 ### Client Events
+
 
 Clients receive these events via `client.send()`:
 - `alliance_offer: { fromPlayerId, fromPlayerName }`
@@ -2162,6 +2250,7 @@ Clients receive these events via `client.send()`:
 ⏳ Frontend integration pending (Naomi)  
 ⏳ Game simulation integration pending (Miller)
 ### 2025-01-20: PR-Based Workflow and Code Review Process
+
 
 **By:** Squad (Coordinator)  
 **Requested by:** dkirby-ms
@@ -2233,6 +2322,7 @@ Clients receive these events via `client.send()`:
 - One-time setup: configure GitHub branch protection on master/main
 ### 2025-01-20: PRs Must Pass Full Build Before Review Approval
 
+
 **By:** Alex  
 **What:** All PRs must successfully complete `npm run build` (full TypeScript compilation) before approval, not just tests.
 
@@ -2247,6 +2337,7 @@ This ensures we don't merge code that breaks the build pipeline.
 
 ### 2025-01-20: TypeScript Configuration Standardized for Vite
 
+
 **By:** Alex
 
 **What:** Established standard tsconfig.json configuration for Vite projects: `moduleResolution: "bundler"`, `module: "ESNext"`, `noEmit: true`, `allowImportingTsExtensions: true`.
@@ -2254,6 +2345,7 @@ This ensures we don't merge code that breaks the build pipeline.
 **Why:** The previous NodeNext configuration was incompatible with Vite's bundler-based module resolution. This standard configuration aligns with Vite best practices and eliminates build errors while maintaining strict type checking. The `noEmit` flag is critical since Vite handles all transpilation, not tsc.
 
 ### 2025-02-19: Chat Feature Test Strategy
+
 
 **By:** Drummer (Quality Engineer)
 **Date:** 2025-02-19
@@ -2305,6 +2397,7 @@ This ensures we don't merge code that breaks the build pipeline.
 - Profanity filtering (out of MVP scope)
 
 ### 2026-02-17: Chat UI Component Architecture
+
 
 **By:** Naomi
 
@@ -2402,3 +2495,1240 @@ Debounce Logic:
 
 Four-component architecture provides clean separation of concerns, follows React best practices, and maintains consistency with existing EventLog pattern. Auto-scroll behavior is intelligent (respects user scrolling), performance is optimized (memo, debounce, ready for virtual scrolling), and accessibility is built-in (ARIA, keyboard nav, semantic HTML). Ready for implementation.
 
+### 2026-02-17: PixiJS Game Canvas Integration Design
+
+
+**By:** Naomi
+
+**What:** Architecture for integrating PixiJS 2D rendering with React for the grand strategy game canvas. Defines component structure, scene organization, interaction handling, state synchronization, and performance optimization strategies.
+
+**Why:** The game needs a visual representation of the node-based world that can handle potentially hundreds of nodes and connections with smooth pan/zoom, interactive selection, and real-time updates from Colyseus. React alone can't efficiently handle this level of dynamic 2D rendering — PixiJS provides hardware-accelerated canvas rendering while React manages UI chrome and state.
+
+---
+
+## 1. React Component Architecture
+
+### Component Hierarchy
+
+
+```
+GameWorld (existing)
+├── ... (sidebars, controls)
+└── GameCanvas (NEW - PixiJS integration point)
+    ├── Canvas Mount Point (div ref)
+    └── GameCanvasInteractionLayer (NEW - React overlay for tooltips/modals)
+        ├── NodeTooltip (hover info)
+        ├── ConnectionTooltip (hover info)
+        └── ContextMenu (right-click actions)
+```
+
+### GameCanvas Component
+
+
+**Purpose:** Bridge between React state and PixiJS rendering. Owns the PixiJS Application instance and manages the rendering lifecycle.
+
+```typescript
+interface GameCanvasProps {
+  world: GameWorld | null;
+  players: Player[];
+  currentPlayerId: EntityId | null;
+  selectedNodeId: EntityId | null;
+  allies: EntityId[];
+  enemies: EntityId[];
+  onNodeClick: (nodeId: EntityId) => void;
+  onNodeHover: (nodeId: EntityId | null) => void;
+  onNodeRightClick: (nodeId: EntityId, x: number, y: number) => void;
+}
+
+interface GameCanvasState {
+  hoveredNodeId: EntityId | null;
+  hoveredConnectionId: EntityId | null;
+  tooltipPosition: { x: number; y: number } | null;
+  contextMenuOpen: boolean;
+  contextMenuPosition: { x: number; y: number } | null;
+}
+```
+
+**Responsibilities:**
+- Initialize PixiJS Application on mount
+- Create and manage scene graph (containers, layers)
+- Subscribe to world state changes and update sprites
+- Handle canvas resize events
+- Clean up PixiJS resources on unmount
+- Manage pan/zoom viewport
+- Translate canvas events to React callbacks
+
+**Implementation Pattern:**
+```typescript
+export function GameCanvas(props: GameCanvasProps) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const pixiAppRef = useRef<PIXI.Application | null>(null);
+  const sceneManagerRef = useRef<SceneManager | null>(null);
+  const [state, setState] = useState<GameCanvasState>({ ... });
+
+  // Initialize PixiJS on mount
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    
+    const app = new PIXI.Application({
+      width: canvasRef.current.clientWidth,
+      height: canvasRef.current.clientHeight,
+      backgroundColor: 0x0a0e17, // Match dark theme
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+      autoDensity: true,
+    });
+    
+    canvasRef.current.appendChild(app.view as HTMLCanvasElement);
+    pixiAppRef.current = app;
+    
+    // Initialize scene manager
+    sceneManagerRef.current = new SceneManager(app.stage);
+    
+    // Cleanup
+    return () => {
+      app.destroy(true, { children: true, texture: true });
+    };
+  }, []);
+
+  // Update scene when world changes
+  useEffect(() => {
+    if (!sceneManagerRef.current || !props.world) return;
+    sceneManagerRef.current.updateWorld(props.world, props.players);
+  }, [props.world, props.players]);
+
+  // Update selection state
+  useEffect(() => {
+    if (!sceneManagerRef.current) return;
+    sceneManagerRef.current.setSelectedNode(props.selectedNodeId);
+  }, [props.selectedNodeId]);
+
+  // Update diplomatic highlighting
+  useEffect(() => {
+    if (!sceneManagerRef.current) return;
+    sceneManagerRef.current.setAllies(props.allies);
+    sceneManagerRef.current.setEnemies(props.enemies);
+  }, [props.allies, props.enemies]);
+
+  return (
+    <div ref={canvasRef} className={styles.canvasContainer}>
+      {/* React overlay for tooltips */}
+      <GameCanvasInteractionLayer
+        hoveredNodeId={state.hoveredNodeId}
+        tooltipPosition={state.tooltipPosition}
+        contextMenuOpen={state.contextMenuOpen}
+        contextMenuPosition={state.contextMenuPosition}
+      />
+    </div>
+  );
+}
+```
+
+---
+
+## 2. PixiJS Scene Organization
+
+### Container Hierarchy (Z-order, bottom to top)
+
+
+```
+app.stage
+├── backgroundLayer (Container)
+│   └── gridSprite (optional background grid/stars)
+├── connectionsLayer (Container)
+│   ├── connectionLine_1 (Graphics)
+│   ├── connectionLine_2 (Graphics)
+│   └── ... (all connections)
+├── nodesLayer (Container)
+│   ├── nodeContainer_1 (Container)
+│   │   ├── nodeCircle (Graphics)
+│   │   ├── nodeOwnerRing (Graphics - colored border)
+│   │   ├── nodeDiplomacyGlow (Graphics - ally/enemy highlight)
+│   │   ├── nodeResources (Container)
+│   │   │   ├── resourceIcon_1 (Sprite)
+│   │   │   └── resourceIcon_2 (Sprite)
+│   │   └── nodeLabel (Text)
+│   └── nodeContainer_2 (Container)
+│       └── ...
+├── unitsLayer (Container - future: player units/fleets)
+└── overlayLayer (Container)
+    ├── selectionIndicator (Graphics - animated ring around selected node)
+    └── hoverIndicator (Graphics - subtle glow on hover)
+```
+
+**Layer Responsibilities:**
+
+- **backgroundLayer**: Static background (starfield, grid, etc.). Rendered once, rarely updated.
+- **connectionsLayer**: Lines between nodes. Rebuilt when connections change (rare).
+- **nodesLayer**: Node sprites and metadata. Updated when ownership/resources change.
+- **unitsLayer**: Future — player units, fleets, moving elements.
+- **overlayLayer**: Selection/hover indicators. Updated frequently, kept separate for performance.
+
+**Why Layers?** Separate containers allow:
+- Bulk visibility toggling (e.g., hide all connections)
+- Independent culling per layer
+- Easier z-order management
+- Performance optimization (update only what changed)
+
+---
+
+## 3. Scene Manager (SceneManager class)
+
+**Purpose:** Encapsulate all PixiJS rendering logic. Separates rendering concerns from React lifecycle.
+
+```typescript
+class SceneManager {
+  private stage: PIXI.Container;
+  private backgroundLayer: PIXI.Container;
+  private connectionsLayer: PIXI.Container;
+  private nodesLayer: PIXI.Container;
+  private unitsLayer: PIXI.Container;
+  private overlayLayer: PIXI.Container;
+  
+  // Sprite registries for efficient updates
+  private nodeSpriteMap: Map<EntityId, NodeSprite> = new Map();
+  private connectionSpriteMap: Map<EntityId, PIXI.Graphics> = new Map();
+  
+  // State tracking
+  private currentWorld: GameWorld | null = null;
+  private selectedNodeId: EntityId | null = null;
+  private allies: Set<EntityId> = new Set();
+  private enemies: Set<EntityId> = new Set();
+  
+  // Viewport (pan/zoom)
+  private viewport: Viewport | null = null;
+
+  constructor(stage: PIXI.Container) {
+    this.stage = stage;
+    this.initializeLayers();
+    this.initializeViewport();
+  }
+
+  private initializeLayers(): void {
+    this.backgroundLayer = new PIXI.Container();
+    this.connectionsLayer = new PIXI.Container();
+    this.nodesLayer = new PIXI.Container();
+    this.unitsLayer = new PIXI.Container();
+    this.overlayLayer = new PIXI.Container();
+
+    this.stage.addChild(this.backgroundLayer);
+    this.stage.addChild(this.connectionsLayer);
+    this.stage.addChild(this.nodesLayer);
+    this.stage.addChild(this.unitsLayer);
+    this.stage.addChild(this.overlayLayer);
+  }
+
+  private initializeViewport(): void {
+    // Using pixi-viewport library for pan/zoom
+    this.viewport = new Viewport({
+      screenWidth: this.stage.width,
+      screenHeight: this.stage.height,
+      worldWidth: 5000, // Virtual world size
+      worldHeight: 5000,
+      interaction: this.stage.renderer.plugins.interaction,
+    });
+
+    this.viewport
+      .drag()
+      .pinch()
+      .wheel()
+      .decelerate()
+      .clamp({ direction: 'all' });
+
+    // Move layers into viewport (everything except overlay)
+    this.viewport.addChild(this.backgroundLayer);
+    this.viewport.addChild(this.connectionsLayer);
+    this.viewport.addChild(this.nodesLayer);
+    this.viewport.addChild(this.unitsLayer);
+    
+    this.stage.addChildAt(this.viewport, 0);
+    // overlayLayer stays in stage (not viewport) for screen-space rendering
+  }
+
+  public updateWorld(world: GameWorld, players: Player[]): void {
+    if (!world) return;
+    
+    // Detect changes and update sprites incrementally
+    this.updateNodes(world.nodes, players);
+    this.updateConnections(world.connections);
+    
+    this.currentWorld = world;
+  }
+
+  private updateNodes(nodes: Record<EntityId, Node>, players: Player[]): void {
+    const nodeIds = Object.keys(nodes);
+    
+    // Add/update nodes
+    for (const nodeId of nodeIds) {
+      const node = nodes[nodeId];
+      const existing = this.nodeSpriteMap.get(nodeId);
+      
+      if (existing) {
+        existing.update(node, players, {
+          isSelected: nodeId === this.selectedNodeId,
+          isAlly: !!(node.ownerId && this.allies.has(node.ownerId)),
+          isEnemy: !!(node.ownerId && this.enemies.has(node.ownerId)),
+        });
+      } else {
+        const nodeSprite = new NodeSprite(node, players);
+        nodeSprite.on('click', () => this.onNodeClick(nodeId));
+        nodeSprite.on('hover', () => this.onNodeHover(nodeId));
+        this.nodeSpriteMap.set(nodeId, nodeSprite);
+        this.nodesLayer.addChild(nodeSprite.container);
+      }
+    }
+    
+    // Remove deleted nodes
+    for (const [nodeId, sprite] of this.nodeSpriteMap) {
+      if (!nodes[nodeId]) {
+        this.nodesLayer.removeChild(sprite.container);
+        sprite.destroy();
+        this.nodeSpriteMap.delete(nodeId);
+      }
+    }
+  }
+
+  private updateConnections(connections: Record<EntityId, Connection>): void {
+    // Similar pattern to updateNodes
+    // Draw lines between fromNode.position and toNode.position
+    // Use Graphics for lines (cheap to redraw)
+  }
+
+  public setSelectedNode(nodeId: EntityId | null): void {
+    const prevSelected = this.selectedNodeId;
+    this.selectedNodeId = nodeId;
+    
+    // Update previous selection
+    if (prevSelected) {
+      const sprite = this.nodeSpriteMap.get(prevSelected);
+      if (sprite) sprite.setSelected(false);
+    }
+    
+    // Update new selection
+    if (nodeId) {
+      const sprite = this.nodeSpriteMap.get(nodeId);
+      if (sprite) sprite.setSelected(true);
+    }
+    
+    // Update overlay selection indicator
+    this.updateSelectionIndicator();
+  }
+
+  public setAllies(allies: EntityId[]): void {
+    this.allies = new Set(allies);
+    this.updateDiplomacyHighlights();
+  }
+
+  public setEnemies(enemies: EntityId[]): void {
+    this.enemies = new Set(enemies);
+    this.updateDiplomacyHighlights();
+  }
+
+  private updateDiplomacyHighlights(): void {
+    for (const [nodeId, sprite] of this.nodeSpriteMap) {
+      const node = this.currentWorld?.nodes[nodeId];
+      if (!node) continue;
+      
+      sprite.setDiplomacy({
+        isAlly: !!(node.ownerId && this.allies.has(node.ownerId)),
+        isEnemy: !!(node.ownerId && this.enemies.has(node.ownerId)),
+      });
+    }
+  }
+
+  private updateSelectionIndicator(): void {
+    // Draw animated ring around selected node in overlayLayer
+    // Use PIXI.Graphics with alpha animation
+  }
+}
+```
+
+---
+
+## 4. Node Sprite (NodeSprite class)
+
+**Purpose:** Encapsulate rendering and state for a single node. Keeps SceneManager clean.
+
+```typescript
+class NodeSprite {
+  public container: PIXI.Container;
+  private circle: PIXI.Graphics;
+  private ownerRing: PIXI.Graphics;
+  private diplomacyGlow: PIXI.Graphics;
+  private label: PIXI.Text;
+  private resourceContainer: PIXI.Container;
+  
+  private node: Node;
+  private isSelected: boolean = false;
+  private isAlly: boolean = false;
+  private isEnemy: boolean = false;
+
+  constructor(node: Node, players: Player[]) {
+    this.node = node;
+    this.container = new PIXI.Container();
+    this.container.position.set(node.position.x, node.position.y);
+    
+    // Make interactive
+    this.container.interactive = true;
+    this.container.buttonMode = true;
+    
+    this.circle = this.createCircle();
+    this.ownerRing = this.createOwnerRing();
+    this.diplomacyGlow = this.createDiplomacyGlow();
+    this.resourceContainer = this.createResourceIcons();
+    this.label = this.createLabel();
+    
+    this.container.addChild(this.diplomacyGlow); // Behind
+    this.container.addChild(this.circle);
+    this.container.addChild(this.ownerRing);
+    this.container.addChild(this.resourceContainer);
+    this.container.addChild(this.label);
+    
+    this.update(node, players, {});
+  }
+
+  private createCircle(): PIXI.Graphics {
+    const g = new PIXI.Graphics();
+    g.beginFill(0x1a2332); // Dark blue-gray
+    g.drawCircle(0, 0, 30); // 30px radius
+    g.endFill();
+    return g;
+  }
+
+  private createOwnerRing(): PIXI.Graphics {
+    const g = new PIXI.Graphics();
+    // Will be drawn in update() based on owner color
+    return g;
+  }
+
+  private createDiplomacyGlow(): PIXI.Graphics {
+    const g = new PIXI.Graphics();
+    g.alpha = 0; // Hidden by default
+    return g;
+  }
+
+  private createResourceIcons(): PIXI.Container {
+    const container = new PIXI.Container();
+    container.position.set(-15, 35); // Below node circle
+    return container;
+  }
+
+  private createLabel(): PIXI.Text {
+    return new PIXI.Text(this.node.name, {
+      fontSize: 12,
+      fill: 0xe8eaed,
+      fontFamily: 'Arial',
+    });
+  }
+
+  public update(
+    node: Node,
+    players: Player[],
+    state: { isSelected?: boolean; isAlly?: boolean; isEnemy?: boolean }
+  ): void {
+    this.node = node;
+    
+    // Update position (if moved)
+    this.container.position.set(node.position.x, node.position.y);
+    
+    // Update owner ring
+    this.ownerRing.clear();
+    if (node.ownerId) {
+      const owner = players.find(p => p.id === node.ownerId);
+      if (owner) {
+        const color = parseInt(owner.color.replace('#', ''), 16);
+        this.ownerRing.lineStyle(3, color, 1);
+        this.ownerRing.drawCircle(0, 0, 30);
+      }
+    }
+    
+    // Update diplomacy glow
+    if (state.isAlly !== undefined) this.isAlly = state.isAlly;
+    if (state.isEnemy !== undefined) this.isEnemy = state.isEnemy;
+    this.updateDiplomacyGlow();
+    
+    // Update selection state
+    if (state.isSelected !== undefined) this.setSelected(state.isSelected);
+    
+    // Update resources
+    this.updateResourceIcons(node.resources);
+    
+    // Update label
+    this.label.text = node.name;
+  }
+
+  private updateDiplomacyGlow(): void {
+    this.diplomacyGlow.clear();
+    
+    if (this.isAlly) {
+      // Green glow
+      this.diplomacyGlow.beginFill(0x22c55e, 0.2);
+      this.diplomacyGlow.drawCircle(0, 0, 40);
+      this.diplomacyGlow.endFill();
+      this.diplomacyGlow.alpha = 1;
+    } else if (this.isEnemy) {
+      // Red glow
+      this.diplomacyGlow.beginFill(0xef4444, 0.2);
+      this.diplomacyGlow.drawCircle(0, 0, 40);
+      this.diplomacyGlow.endFill();
+      this.diplomacyGlow.alpha = 1;
+    } else {
+      this.diplomacyGlow.alpha = 0;
+    }
+  }
+
+  public setSelected(selected: boolean): void {
+    this.isSelected = selected;
+    // Visual feedback: Slightly larger circle, brighter border
+    this.circle.scale.set(selected ? 1.1 : 1);
+  }
+
+  public setDiplomacy(state: { isAlly: boolean; isEnemy: boolean }): void {
+    this.isAlly = state.isAlly;
+    this.isEnemy = state.isEnemy;
+    this.updateDiplomacyGlow();
+  }
+
+  private updateResourceIcons(resources: readonly Resource[]): void {
+    // Clear existing icons
+    this.resourceContainer.removeChildren();
+    
+    // Add small resource icons (simplified for MVP)
+    resources.forEach((resource, index) => {
+      const icon = new PIXI.Text(this.getResourceIcon(resource.type), {
+        fontSize: 14,
+      });
+      icon.position.set(index * 18, 0);
+      this.resourceContainer.addChild(icon);
+    });
+  }
+
+  private getResourceIcon(type: ResourceType): string {
+    switch (type) {
+      case ResourceType.Minerals: return '⛏️';
+      case ResourceType.Energy: return '⚡';
+      case ResourceType.Alloys: return '🔩';
+      case ResourceType.Research: return '🔬';
+      default: return '❓';
+    }
+  }
+
+  public on(event: 'click' | 'hover', handler: () => void): void {
+    if (event === 'click') {
+      this.container.on('pointerdown', handler);
+    } else if (event === 'hover') {
+      this.container.on('pointerover', handler);
+    }
+  }
+
+  public destroy(): void {
+    this.container.destroy({ children: true });
+  }
+}
+```
+
+---
+
+## 5. Interaction Event Flow
+
+### User Clicks Node → What Happens?
+
+
+```
+1. User clicks on canvas
+   ↓
+2. PixiJS interaction manager detects hit on NodeSprite container
+   ↓
+3. NodeSprite 'pointerdown' event fires
+   ↓
+4. SceneManager's registered handler calls onNodeClick(nodeId)
+   ↓
+5. SceneManager passes nodeId to GameCanvas via callback ref
+   ↓
+6. GameCanvas calls props.onNodeClick(nodeId)
+   ↓
+7. GameWorld updates selectedNodeId state
+   ↓
+8. GameWorld re-renders (cheap, just state change)
+   ↓
+9. GameCanvas receives new selectedNodeId prop
+   ↓
+10. useEffect triggers sceneManager.setSelectedNode(nodeId)
+    ↓
+11. SceneManager updates sprite visual state (selection ring)
+```
+
+### User Hovers Node → Tooltip Appears
+
+
+```
+1. User moves mouse over NodeSprite
+   ↓
+2. PixiJS 'pointerover' event fires
+   ↓
+3. SceneManager handler updates local hover state
+   ↓
+4. SceneManager calls GameCanvas callback: onNodeHover(nodeId)
+   ↓
+5. GameCanvas updates state: { hoveredNodeId: nodeId, tooltipPosition: { x, y } }
+   ↓
+6. GameCanvas re-renders React overlay
+   ↓
+7. NodeTooltip component renders at tooltipPosition with node data
+```
+
+### User Right-Clicks Node → Context Menu
+
+
+```
+1. User right-clicks on NodeSprite
+   ↓
+2. PixiJS 'rightdown' event fires
+   ↓
+3. SceneManager calls GameCanvas callback: onNodeRightClick(nodeId, x, y)
+   ↓
+4. GameCanvas updates state: { contextMenuOpen: true, contextMenuPosition: { x, y } }
+   ↓
+5. ContextMenu component renders at position with actions (Claim, Abandon, View Details)
+```
+
+### Pan/Zoom with Mouse
+
+
+```
+1. User drags on empty canvas space
+   ↓
+2. pixi-viewport library handles drag event
+   ↓
+3. Viewport translates entire stage (except overlayLayer)
+   ↓
+4. All sprites move together (cheap, just transform matrix change)
+   ↓
+5. Viewport emits 'moved' event
+   ↓
+6. SceneManager updates culling bounds (hide offscreen sprites)
+```
+
+---
+
+## 6. State Update Flow (Colyseus → React → PixiJS)
+
+### Colyseus sends state update
+
+
+```
+1. Colyseus room.onStateChange fires with new GameWorld
+   ↓
+2. useGameSocket updates gameStateStore via action
+   ↓
+3. gameStateStore notifies subscribers (React components)
+   ↓
+4. GameWorld hook (useGameWorld) re-renders with new world
+   ↓
+5. GameWorld passes updated world prop to GameCanvas
+   ↓
+6. GameCanvas useEffect detects world change
+   ↓
+7. sceneManager.updateWorld(world, players) called
+   ↓
+8. SceneManager diffs current vs. new world
+   ↓
+9. For each changed node:
+      - Find existing NodeSprite in nodeSpriteMap
+      - Call sprite.update(node, players, state)
+      - NodeSprite redraws owner ring, resources, etc.
+   ↓
+10. PixiJS renders next frame with updated sprites
+```
+
+**Key Optimization:** Only changed sprites are updated, not the entire scene. This is why we maintain a sprite registry (nodeSpriteMap).
+
+---
+
+## 7. Performance Optimization Strategies
+
+### A. Sprite Registry Pattern
+
+
+Instead of rebuilding the entire scene on every state change, maintain a Map of EntityId → Sprite. On update:
+- Iterate new state
+- For each entity, check if sprite exists
+  - If yes: Update existing sprite (cheap)
+  - If no: Create new sprite
+- Remove sprites for deleted entities
+
+**Why:** Avoids destroying and recreating sprites every frame. PixiJS sprites are stateful — reusing them is much faster.
+
+### B. Culling Offscreen Sprites
+
+
+```typescript
+private cullSprites(): void {
+  const bounds = this.viewport.getVisibleBounds();
+  
+  for (const [nodeId, sprite] of this.nodeSpriteMap) {
+    const node = this.currentWorld?.nodes[nodeId];
+    if (!node) continue;
+    
+    const inView = bounds.contains(node.position.x, node.position.y);
+    sprite.container.visible = inView;
+  }
+}
+```
+
+Call `cullSprites()` on viewport 'moved' event. Hidden sprites don't render (free performance).
+
+**Trade-off:** Adds overhead for culling check. Only beneficial when 100+ nodes. For MVP (10-50 nodes), skip culling.
+
+### C. Batch Rendering with Graphics
+
+
+Connections (lines between nodes) use PIXI.Graphics, not Sprites. Graphics batches multiple draw calls into one.
+
+```typescript
+private drawConnection(conn: Connection): void {
+  const fromNode = this.currentWorld.nodes[conn.fromNodeId];
+  const toNode = this.currentWorld.nodes[conn.toNodeId];
+  
+  const line = new PIXI.Graphics();
+  line.lineStyle(2, 0x6b7280, 0.5); // Gray, semi-transparent
+  line.moveTo(fromNode.position.x, fromNode.position.y);
+  line.lineTo(toNode.position.x, toNode.position.y);
+  
+  this.connectionSpriteMap.set(conn.id, line);
+  this.connectionsLayer.addChild(line);
+}
+```
+
+**Why Graphics over Sprite:** Lines are cheap to draw with Graphics. Sprites require texture atlases, which is overkill for simple lines.
+
+### D. Debounced Updates
+
+
+Some updates (like hover effects) can be debounced to reduce redraws:
+
+```typescript
+private hoverDebounce: number | null = null;
+
+private onNodeHover(nodeId: EntityId): void {
+  if (this.hoverDebounce) clearTimeout(this.hoverDebounce);
+  
+  this.hoverDebounce = window.setTimeout(() => {
+    this.currentHoveredNodeId = nodeId;
+    this.updateHoverIndicator();
+  }, 50); // 50ms delay
+}
+```
+
+**Why:** Reduces flicker when mouse moves rapidly across multiple nodes.
+
+### E. Dirty Tracking
+
+
+Only update sprites when their data actually changes:
+
+```typescript
+public update(node: Node, players: Player[], state: UpdateState): void {
+  // Check if owner changed
+  if (node.ownerId !== this.node.ownerId) {
+    this.updateOwnerRing(node, players);
+  }
+  
+  // Check if resources changed
+  if (node.resources.length !== this.node.resources.length) {
+    this.updateResourceIcons(node.resources);
+  }
+  
+  this.node = node;
+}
+```
+
+**Why:** Avoids redrawing unchanged graphics. Graphics operations (clear(), drawCircle()) are not free.
+
+### F. Object Pooling (Future Enhancement)
+
+
+For games with units moving between nodes, object pooling prevents garbage collection spikes:
+
+```typescript
+class SpritePool {
+  private available: PIXI.Sprite[] = [];
+  
+  public acquire(): PIXI.Sprite {
+    return this.available.pop() || new PIXI.Sprite();
+  }
+  
+  public release(sprite: PIXI.Sprite): void {
+    sprite.visible = false;
+    this.available.push(sprite);
+  }
+}
+```
+
+**When:** Only needed if creating/destroying 100+ sprites per second (not MVP concern).
+
+---
+
+## 8. Pan/Zoom Controls
+
+### Using pixi-viewport Library
+
+
+```typescript
+import { Viewport } from 'pixi-viewport';
+
+this.viewport = new Viewport({
+  screenWidth: window.innerWidth,
+  screenHeight: window.innerHeight,
+  worldWidth: 5000,
+  worldHeight: 5000,
+  interaction: app.renderer.plugins.interaction,
+});
+
+// Enable drag (pan)
+this.viewport.drag({
+  mouseButtons: 'left', // Left mouse button to drag
+});
+
+// Enable pinch zoom (touch devices)
+this.viewport.pinch();
+
+// Enable mouse wheel zoom
+this.viewport.wheel({
+  smooth: 5, // Smooth scroll interpolation
+  percent: 0.1, // Zoom 10% per wheel tick
+});
+
+// Enable decelerate (momentum after drag)
+this.viewport.decelerate({
+  friction: 0.95,
+});
+
+// Clamp to world bounds
+this.viewport.clamp({
+  direction: 'all',
+  underflow: 'center', // Center if world smaller than screen
+});
+
+// Set zoom limits
+this.viewport.clampZoom({
+  minScale: 0.5,
+  maxScale: 2.0,
+});
+```
+
+**Why pixi-viewport?** Battle-tested library for pan/zoom in PixiJS. Handles touch gestures, momentum, clamping — reinventing this is error-prone.
+
+**Installation:**
+```bash
+npm install pixi-viewport
+```
+
+### Viewport Event Handlers
+
+
+```typescript
+this.viewport.on('moved', () => {
+  // Optional: Update culling or UI overlays
+  this.cullSprites();
+});
+
+this.viewport.on('zoomed', () => {
+  // Optional: Adjust label visibility based on zoom level
+  this.updateLabelVisibility();
+});
+```
+
+---
+
+## 9. Integration with Existing GameWorld
+
+### Current State (Line 170 in GameWorld.tsx)
+
+
+```tsx
+<div className={styles.canvas}>
+  <div className={styles.canvasPlaceholder}>
+    <div className={styles.placeholderContent}>
+      <span className={styles.placeholderIcon}>🎮</span>
+      <p>Game Canvas</p>
+      <p className={styles.placeholderSubtext}>
+        PixiJS rendering will be added here
+      </p>
+    </div>
+  </div>
+</div>
+```
+
+### After Integration
+
+
+```tsx
+<div className={styles.canvas}>
+  <GameCanvas
+    world={world}
+    players={players}
+    currentPlayerId={currentPlayerId}
+    selectedNodeId={selectedNodeId}
+    allies={allies}
+    enemies={enemies}
+    onNodeClick={handleNodeClick}
+    onNodeHover={handleNodeHover}
+    onNodeRightClick={(nodeId, x, y) => {
+      setSelectedNodeId(nodeId);
+      // Show context menu
+    }}
+  />
+</div>
+```
+
+**Node Grid (lines 183-206) Behavior:**
+- **Option 1 (MVP):** Keep node grid below canvas as fallback/debug view
+- **Option 2 (Cleaner):** Remove node grid entirely, canvas is the only view
+- **Recommendation:** Keep node grid initially, hide behind debug flag once canvas is stable
+
+---
+
+## 10. Files to Create
+
+### New Components
+
+
+```
+src/components/GameCanvas/
+├── GameCanvas.tsx              # Main PixiJS integration component
+├── GameCanvas.module.css       # Canvas container styling
+├── SceneManager.ts             # PixiJS scene graph manager
+├── NodeSprite.ts               # Individual node rendering
+├── ConnectionRenderer.ts       # Connection line rendering
+└── __tests__/
+    ├── GameCanvas.test.tsx
+    └── SceneManager.test.ts
+
+src/components/GameCanvasInteractionLayer/
+├── GameCanvasInteractionLayer.tsx  # React overlay for tooltips
+├── GameCanvasInteractionLayer.module.css
+├── NodeTooltip.tsx             # Hover tooltip for nodes
+├── ConnectionTooltip.tsx       # Hover tooltip for connections
+└── ContextMenu.tsx             # Right-click menu
+```
+
+### Dependencies to Add
+
+
+```bash
+npm install pixi.js pixi-viewport
+npm install --save-dev @types/pixi.js
+```
+
+---
+
+## 11. Testing Strategy
+
+### Unit Tests
+
+
+**SceneManager:**
+- `updateWorld()` adds new nodes to nodeSpriteMap
+- `updateWorld()` removes deleted nodes
+- `setSelectedNode()` updates sprite state correctly
+- `setAllies()` / `setEnemies()` update diplomacy glows
+
+**NodeSprite:**
+- `update()` redraws owner ring when ownerId changes
+- `setSelected()` toggles visual state
+- `setDiplomacy()` shows/hides ally/enemy glow
+
+### Integration Tests
+
+
+**GameCanvas:**
+- Initializes PixiJS app on mount
+- Cleans up PixiJS resources on unmount
+- Calls onNodeClick when node is clicked
+- Updates selection when selectedNodeId prop changes
+
+### Manual Testing
+
+
+- Click nodes to select (visual feedback + sidebar update)
+- Hover nodes (tooltip appears)
+- Pan canvas with mouse drag
+- Zoom with mouse wheel
+- Right-click node (context menu)
+- Claim node, watch owner ring update
+- Form alliance, watch ally glow appear
+- Disconnect, reconnect (canvas persists state)
+
+---
+
+## 12. Accessibility Considerations
+
+**Challenge:** Canvas elements are not natively accessible to screen readers.
+
+**Strategies:**
+
+1. **ARIA Live Region** for canvas state changes:
+```tsx
+<div aria-live="polite" aria-atomic="true" className={styles.srOnly}>
+  {selectedNode ? `Selected ${selectedNode.name}` : ''}
+</div>
+```
+
+2. **Keyboard Navigation Fallback:**
+- Keep node grid (list view) accessible via keyboard
+- Add keyboard shortcuts: Arrow keys to navigate nodes, Enter to select
+
+3. **Focus Management:**
+- When node selected via canvas, update URL hash: `#node-123`
+- Node grid can link to `#node-123` for keyboard users
+
+4. **Screen Reader Description:**
+```tsx
+<canvas aria-label="Game world map with nodes and connections. Use the node list below for keyboard navigation." />
+```
+
+**Trade-off:** Full canvas accessibility is hard. Provide keyboard-accessible alternative (node grid) as primary navigation for screen reader users.
+
+---
+
+## 13. Open Questions for Backend (Amos) & Simulation (Miller)
+
+1. **Node Positions:** Are node.position values sent by server, or generated client-side? If server-side, what coordinate system (0-1000? 0-5000?)?
+2. **Initial Camera Position:** Should camera center on player's "home node" on connect?
+3. **Connection Directionality:** Are connections bidirectional, or do we need to draw arrows?
+4. **Gateway Visual:** How should gateways look different from direct connections?
+5. **Unit Sprites (Future):** Will units have positions in GameWorld schema, or separate entity type?
+
+---
+
+## 14. Future Enhancements (Out of MVP Scope)
+
+- **Minimap:** Small overview map in corner showing entire world
+- **Fog of War:** Dim/hide unexplored nodes
+- **Animated Connections:** Particles flowing along connection lines
+- **Node Animations:** Pulsing when resources regenerate, shake when contested
+- **Unit Movement:** Sprites moving along connections
+- **Camera Shake:** On war declaration or node loss
+- **Zoom-based LOD:** Hide labels at low zoom, show more detail at high zoom
+- **Custom Cursors:** Hand when hovering node, crosshairs when targeting
+- **Selection Box:** Drag to select multiple nodes (if multi-select feature added)
+- **Canvas Export:** Screenshot button (PIXI.Application.renderer.extract.canvas())
+
+---
+
+## Summary
+
+This design provides a clean separation between React (UI state, lifecycle) and PixiJS (rendering, interactions). The SceneManager acts as the bridge, translating state changes into sprite updates. The sprite registry pattern ensures efficient incremental updates. The pixi-viewport library handles pan/zoom with minimal code. The React overlay layer provides accessible tooltips and menus outside the canvas.
+
+**Key Principles:**
+- React owns state, PixiJS owns rendering
+- Update sprites incrementally, not full redraws
+- Layers for z-order and culling
+- Viewport for pan/zoom
+- Sprite registry for efficient updates
+- Dirty tracking to minimize redraws
+
+**Ready for implementation** once PixiJS dependencies are installed!
+### Data Flow: Simulation → PixiJS
+
+
+```
+Server (Colyseus GameRoom)
+  ↓ (tick broadcast)
+src/game/loop.ts → processTick() → TickResult
+  ↓ (events)
+src/store/gameStateStore.ts → update Zustand store
+  ↓ (React hook subscription)
+GameWorld.tsx → useGameState()
+  ↓ (pass to PixiJS component)
+PixiCanvas.tsx → PixiJS Application
+  ↓ (render)
+PixiJS Scene Graph → nodes, connections, units
+```
+
+### Required State Hooks (for PixiJS integration)
+
+
+```typescript
+// In src/hooks/useGameState.ts
+export function useNodesForVisualization() {
+  return useStore(state => ({
+    nodes: state.world.nodes,
+    tick: state.time.currentTick,
+  }));
+}
+
+export function useConnectionsForVisualization() {
+  return useStore(state => ({
+    connections: state.world.connections,
+    tick: state.time.currentTick,
+  }));
+}
+
+export function usePlayerStatesForVisualization() {
+  return useStore(state => ({
+    players: state.players,
+    localPlayerId: state.localPlayerId,
+    diplomaticRelations: state.diplomaticRelations,
+  }));
+}
+
+export function useTickProgress() {
+  // For interpolation between ticks
+  return useStore(state => ({
+    currentTick: state.time.currentTick,
+    lastTickTime: state.time.lastTickTime,
+    tickDuration: state.time.baseTickDuration / state.time.speed,
+  }));
+}
+```
+
+---
+
+## 6. PERFORMANCE CONSIDERATIONS
+
+### Rendering Layer Responsibilities (Naomi + PixiJS)
+
+- ✅ Subscribe to tick events from game loop
+- ✅ Translate game state → visual representation
+- ✅ Handle client-side interpolation for smooth animations
+- ✅ Implement pan/zoom/interaction controls
+- ✅ Apply LOD and culling for performance
+- ✅ Render fog of war based on discovery state
+
+### 2026-02-17: Chat Integration Pattern
+
+
+**By:** Naomi
+
+**What:** Established pattern for integrating chat with game state store and Colyseus hooks. Chat messages flow: Colyseus backend → `room.onMessage('chat_message')` → `gameStateStore.addChatMessage()` → `useChatMessages()` hook → React components. Send flow: Component → `sendChatMessage()` from useGameSocket → `room.send('send_chat', { content })`.
+
+**Why:** Chat needed integration with existing state management patterns. This approach:
+- Reuses established store → hook → component pattern (same as events, players, diplomacy)
+- Keeps Colyseus logic centralized in useGameSocket
+- Limits message history (200 max) to prevent memory bloat
+- Clears messages on disconnect for clean reconnection state
+- Uses useSyncExternalStore for efficient React 18+ integration
+
+**Key Implementation Details:**
+- Store: `chatMessages: ChatMessage[]` with `addChatMessage()`, `clearChatMessages()`, `getChatMessages()`
+- Hook: `useChatMessages()` in useGameState.ts (not separate file) for consistency
+- Socket: `room.onMessage('chat_message')` listener, `sendChatMessage()` export
+- Cleanup: `clearChatMessages()` called on disconnect alongside `clear()`
+- Type: `ChatMessage` interface exported from gameState.ts for consistency
+
+**Pattern Rationale:**
+- Follows existing event history pattern (addEvents, getEventHistory, useEventHistory)
+- Uses same subscriber notification pattern for React updates
+- Maintains separation: networking (useGameSocket) ↔ state (gameStateStore) ↔ UI (hooks + components)
+- RightNav prop-drills sendChatMessage to ChatPanel (alternative: context, rejected for simplicity)
+# Chat Feature Review
+
+**Reviewer:** Alex Kamal
+**Date:** 2025-07-16
+**Status:** REQUEST CHANGES
+
+## Critical Issues
+
+1. **Player Identity Resolution (GameWorld.tsx)**
+   - Code: `const currentPlayerId = players.length > 0 ? players[0].id : undefined;`
+   - **Problem:** This assumes the local player is always the first one in the `players` array. In a multiplayer session, `players` is a synced collection; the order is not guaranteed to put the local player first.
+   - **Impact:** Players who join second/third will see *someone else's* ID as their own. Chat messages will be misaligned (right vs left) and colored incorrectly.
+   - **Fix:** `useGameSocket` needs to expose the Colyseus `sessionId` (available on `room.sessionId`). Then map `sessionId` to `player.id` using the `players` list.
+
+## Nice to Have / Suggestions
+
+2. **Frontend Tests**
+   - `ChatPanel.test.tsx` contains 47 TODO tests. While acceptable for initial merge given the backend coverage, we should ensure these don't stay TODOs forever.
+
+3. **Rate Limit Logic**
+   - The rate limit logic in `checkChatRateLimit` mutates state (adds timestamp) even if we are just "checking". It returns `{ allowed, updatedRateLimit }`. The implementation in `GameRoom.ts` is `if (!checkChatRateLimit(client.sessionId)) return;`. This works, but ensuring the "check" doesn't count failed attempts against the successful limit is subtle. (Current implementation seems to *not* count failed attempts if `filteredMessages.length >= limit`, which is good).
+
+## Recommendation
+
+Route back to **Naomi** (Frontend) and **Amos** (Backend) to fix the `currentPlayerId` issue. The backend might need to help by providing a way to know "my" player ID, or the frontend hook needs to expose the `sessionId`.
+# Chat Backend Implementation
+
+**Date:** 2025-07-16  
+**Decided by:** Amos  
+**Status:** Implemented
+
+## Decision
+
+Implemented chat message handling in GameRoom using:
+- **XSS library:** `xss` npm package for sanitization (robust, maintained, sensible defaults)
+- **Rate limiting:** Rolling window algorithm (5 messages per 10 seconds per player)
+- **Message IDs:** `crypto.randomUUID()` for unique message identification
+- **Error feedback:** Structured `chat_error` messages sent to sender on validation failures
+
+## Rationale
+
+**XSS Package Choice:**
+- Mature library with 2.9M weekly downloads
+- Handles HTML tags, JavaScript protocols, and event handlers
+- More comprehensive than regex-based approaches
+- Battle-tested in production environments
+
+**Rolling Window Rate Limiting:**
+- Filters timestamps older than 10 seconds on each check
+- Simpler than token bucket algorithms
+- Fairer than cooldown-based approaches (no punishment for single burst)
+- Memory-efficient: only stores timestamps, auto-cleans on disconnect
+
+**Native crypto.randomUUID():**
+- No external UUID dependencies needed
+- Cryptographically secure
+- Standard in Node.js 14.17+
+- Enables client-side deduplication and message tracking
+
+**Server-Authoritative Design:**
+- Player identity from sessionId mapping (can't be spoofed)
+- All validation happens server-side
+- Sanitization protects all clients, not just sender
+- Rate limiting prevents server resource exhaustion
+
+## Broadcast Message Schema
+
+```typescript
+{
+  id: string,          // crypto.randomUUID()
+  playerId: string,    // Player's persistent ID
+  playerName: string,  // Display name
+  content: string,     // Sanitized content
+  timestamp: number    // Unix timestamp (ms)
+}
+```
+
+## Error Message Schema
+
+```typescript
+{
+  error: string  // Human-readable error message
+}
+```
+
+## Impact
+
+- Frontend (Naomi): Listen for `chat_message` broadcasts, send `send_chat` messages
+- Frontend (Naomi): Handle `chat_error` messages for user feedback
+- No impact on game simulation (Miller): Chat is pure networking layer
+- No impact on diplomacy/territory systems: Independent feature
+
+## Future Considerations
+
+- Message persistence (PostgreSQL) if chat history is needed
+- Alliance/faction/proximity chat via filtering logic
+- Profanity filter integration if required
+- Message edit/delete functionality
+- Typing indicators (separate feature)
+### 2026-02-17: Use room.sessionId for current player identity
+
+
+**By:** Naomi
+
+**What:** Fixed player identity logic to use `room.sessionId` instead of assuming `players[0]` is the current player. Updated `useGameSocket` to expose `currentSessionId`, added `currentSessionId` tracking to `gameStateStore`, and created `useCurrentPlayer()` hook. Fixed `GameWorld.tsx` and `ChatPanel.tsx` to use the correct current player.
+
+**Why:** Alex caught a critical bug in code review — `players[0]` is not the current player in multiplayer sessions, it's just whoever joined first. This caused chat messages to be misattributed. The Colyseus `room.sessionId` identifies the current connection and matches the player's ID in the `players` map. This is the correct way to determine "who am I" in a multiplayer game.
+
+**Pattern:** Always use `room.sessionId` to find the current player. Never rely on array position for identity in multiplayer contexts.
