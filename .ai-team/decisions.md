@@ -3807,3 +3807,35 @@ The mocking strategy isolates React logic (GameCanvas tests mock SceneManager) a
 - Updated viewport center assertion from (1000, 1000) to (450, 350) to match current implementation
 
 **Result:** All 550 tests passing (8 skipped, 123 todo).
+### 2026-02-18: PixiJS v7 Strategy & Test Suite Alignment (consolidated)
+
+**By:** Naomi, Alex
+
+**What:** Established PixiJS v7 as the strategic version for the game engine. Downgraded from v8 to v7 (^7.0.0) to resolve runtime incompatibility with pixi-viewport v5. PR #11 (PixiJS Canvas Phase 1) was subsequently rejected due to test mocks not being updated to match the v7 API changes—61 tests failed using v8-style API while implementation used v7.
+
+**Why:** 
+
+*Version Selection (Naomi):*
+- pixi-viewport v5 was built against PixiJS v7 internals; v8 broke compatibility with changes to internal methods like `updateLocalTransform`
+- v7 is stable and mature, with extensive production usage; upgrading viewport to v8-compatible is prohibitively expensive with unclear benefits
+- v7 + viewport v5 = proven, reliable combination
+
+*Test Suite Alignment (Alex):*
+- Tests were written for v8 API (`app.canvas`) before downgrade; implementation uses v7 API (`app.view`)
+- Cannot merge code with 61 broken tests—tests are the contract we ship
+- PR description falsely claimed "all tests passing"
+- Additional code quality issues: memory leak in resize handler, debug console.log in production code
+
+**Decision:** 
+
+1. **Strategic:** Use PixiJS v7 + pixi-viewport v5 as the locked pairing for this project
+2. **Test Protocol:** When downgrading dependencies after tests are written, update test mocks *before* merging code
+3. **Miller's Remediation (PR #11):**
+   - Fix test mocks to v7 API specification
+   - Fix resize event listener memory leak
+   - Remove debug console.log statements
+   - Extract magic number constants
+   - Update PR description for accuracy
+
+**Pattern:** Always match test mocks to the actual implementation version. Array index assumptions are unstable in multiplayer contexts. In multi-client systems, use authenticated identifiers (sessionId) for player identity, never positional assumptions.
+

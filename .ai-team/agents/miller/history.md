@@ -114,3 +114,5 @@
 📌 Separation principle: Simulation is authoritative, rendering is presentational — never poll, always react to events
 
 📌 Team update (2026-02-17): PixiJS Visualization System design consolidated into decisions.md. Tick-synchronized state requirements and game state model finalized. — decided by Holden, Naomi, Amos, Miller
+
+📌 Team update (2026-02-18): PR #11 remediation assignment — tests must be updated to match PixiJS v7 API. Consolidation of Naomi's v7 downgrade decision (pixi-viewport compatibility) with Alex's test review feedback. — decided by Naomi, Alex

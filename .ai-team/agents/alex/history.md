@@ -108,3 +108,37 @@
 - **But:** Debug logging breaks tests and adds noise
 
 **Lesson:** Console.log statements can break tests if they access properties not exposed by mocks. Always run full test suite, not just build. PR descriptions must accurately reflect ALL tests (including new ones), not just pre-existing tests.
+### 2026-02-18: PR #11 Review - PixiJS Canvas Implementation Rejected
+
+**PR:** #11 "feat: Phase 1 PixiJS Game Canvas MVP" by dkirby-ms  
+**Branch:** feature/pixi-canvas-phase1 → master  
+**Verdict:** REQUEST CHANGES - reassigned to Miller
+
+**Critical Issues Found:**
+1. **Broken test suite**: 61 GameCanvas tests fail due to mock/implementation API mismatch
+   - Tests use PixiJS v8 API (`app.canvas`) but implementation uses v7 API (`app.view`)
+   - Root cause: Implementation downgraded from v8 to v7 after tests were written
+   - Tests must be updated to match v7 API
+2. **Misleading PR description**: Claims "all tests passing" but 61 tests fail, claims pixi.js v8 but uses v7
+3. **Memory leak potential**: Resize event listener not cleaned up if unmount happens during initialization
+4. **Console.log in production**: Debug logging left in GameWorld.tsx lines 60-61
+5. **Magic numbers**: World dimensions hardcoded as 2000 without explanation
+
+**What Works:**
+- Build succeeds (TypeScript passes)
+- Non-GameCanvas tests pass (450 tests, 11 suites)
+- Architecture is sound (React/PixiJS separation via SceneManager)
+- Sprite registry pattern for incremental updates
+- No security vulnerabilities
+- No breaking changes to existing functionality
+
+**Key Files Reviewed:**
+- src/components/GameCanvas/GameCanvas.tsx - React wrapper for PixiJS
+- src/components/GameCanvas/SceneManager.ts - Rendering logic
+- src/components/GameCanvas/__tests__/*.test.tsx - Test suite (all failing)
+- src/components/GameWorld/GameWorld.tsx - Integration point
+- package.json - Dependency changes (pixi.js v7.4.3, pixi-viewport v5.0.0)
+
+**Reassignment Rationale:** Miller (Game Systems Engineer) best suited to fix test suite and ensure rendering layer doesn't violate "The Twist" separation constraint.
+
+**Pattern Identified:** When library APIs change between versions and implementation gets downgraded, test mocks must be synchronized. Always verify tests pass after dependency version changes.
