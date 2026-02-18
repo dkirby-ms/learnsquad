@@ -18,6 +18,9 @@ module.exports = {
       statements: 80,
     },
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(pixi\\.js|pixi-viewport|@pixi)/)',
+  ],
   projects: [
     {
       displayName: 'backend',
@@ -57,6 +60,9 @@ module.exports = {
       moduleNameMapper: {
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
       },
+      transformIgnorePatterns: [
+        'node_modules/(?!(pixi\\.js|pixi-viewport|@pixi)/)',
+      ],
     },
   ],
 };
