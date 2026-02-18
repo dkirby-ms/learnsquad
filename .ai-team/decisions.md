@@ -3732,3 +3732,49 @@ Implemented chat message handling in GameRoom using:
 **Why:** Alex caught a critical bug in code review — `players[0]` is not the current player in multiplayer sessions, it's just whoever joined first. This caused chat messages to be misattributed. The Colyseus `room.sessionId` identifies the current connection and matches the player's ID in the `players` map. This is the correct way to determine "who am I" in a multiplayer game.
 
 **Pattern:** Always use `room.sessionId` to find the current player. Never rely on array position for identity in multiplayer contexts.
+### 2026-02-17: PixiJS Canvas Phase 1 Implementation
+
+**By:** Naomi
+
+**What:** Implemented Phase 1 MVP of the PixiJS game canvas with node/connection rendering, pan/zoom, and click interactions. Added pixi.js@^8.0.0 and pixi-viewport@^5.0.0 as dependencies.
+
+**Why:** The game canvas design was approved and we needed a working visualization layer. Phase 1 provides the foundation for all future rendering features. The sprite registry pattern and layered architecture allow us to incrementally add features (tooltips, diplomacy glows, resource indicators, units) without architectural changes. Type compatibility issues between pixi-viewport v5 and pixi.js v8 required type assertions but are functionally correct - this is a known temporary issue that will resolve in the next pixi-viewport release.
+
+**Technical Details:**
+- GameCanvas.tsx manages PixiJS Application lifecycle via React refs and useEffect
+- SceneManager.ts encapsulates all rendering logic with layered containers
+- Sprite registry (Map<EntityId, Container>) enables incremental updates
+- State flows: Colyseus → store → React props → SceneManager
+- Interactions flow: PixiJS events → callbacks → React setState
+- Type assertions used for Viewport integration (pixi.js v8 compatibility)
+
+**Files Created:**
+- src/components/GameCanvas/GameCanvas.tsx
+- src/components/GameCanvas/SceneManager.ts
+- src/components/GameCanvas/GameCanvas.module.css
+- src/components/GameCanvas/index.ts
+
+**Files Modified:**
+- package.json (added dependencies)
+- src/components/GameWorld/GameWorld.tsx (integrated canvas)
+
+**PR:** #11 - Ready for Alex to review
+### 2026-02-17: PixiJS Canvas Phase 1 Test Suite
+
+**By:** Drummer
+
+**What:** Comprehensive test suite for PixiJS GameCanvas Phase 1 implementation covering component lifecycle, SceneManager rendering, integration tests, and edge cases. 100 total tests across 4 test files — all passing:
+- `GameCanvas.test.tsx` — 23 tests for React component lifecycle, initialization, cleanup, state sync
+- `SceneManager.test.tsx` — 37 tests for node/connection rendering, selection handling, viewport operations
+- `GameCanvas.integration.test.tsx` — 19 tests for full render cycle, state transitions, error recovery
+- `GameCanvas.edge.test.tsx` — 21 tests for empty states, single/many nodes, rapid interactions, extreme positions
+
+**Why:** Tests written PROACTIVELY while Naomi implements the canvas. This defines the contract for how GameCanvas and SceneManager should behave. Tests verify:
+1. **Lifecycle correctness**: PixiJS initialization, canvas creation, cleanup on unmount
+2. **State synchronization**: World state, players, and selection flow from React to PixiJS
+3. **Callback wiring**: onNodeClick flows from PixiJS back to React
+4. **Rendering logic**: Node sprites, connections, owner colors, selection rings
+5. **Performance boundaries**: 100-node baseline, 200-node stress test, rapid update handling
+6. **Edge cases**: Empty worlds, null states, invalid data, extreme positions, rapid clicking
+
+The mocking strategy isolates React logic (GameCanvas tests mock SceneManager) and rendering logic (SceneManager tests mock PixiJS), while integration tests verify the full pipeline. Edge case tests ensure the system degrades gracefully under stress. Jest configured with transformIgnorePatterns for pixi.js/pixi-viewport ES modules and identity-obj-proxy for CSS module mocks.
