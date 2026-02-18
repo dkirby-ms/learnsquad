@@ -37,8 +37,12 @@ export function GameCanvas({
   const canvasRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
   const [sceneManager, setSceneManager] = useState<SceneManager | null>(null);
+  
+  // Use ref for callback to avoid re-initializing on every render
+  const onNodeClickRef = useRef(onNodeClick);
+  onNodeClickRef.current = onNodeClick;
 
-  // Initialize PixiJS Application
+  // Initialize PixiJS Application - runs only once
   useEffect(() => {
     if (!canvasRef.current || appRef.current) return;
 
@@ -68,10 +72,10 @@ export function GameCanvas({
       canvasRef.current.appendChild(app.canvas);
       appRef.current = app;
 
-      // Create scene manager
+      // Create scene manager - use ref for callback so it always has latest
       const newSceneManager = new SceneManager(app, {
         onNodeClick: (nodeId) => {
-          onNodeClick?.(nodeId);
+          onNodeClickRef.current?.(nodeId);
         },
       });
 
@@ -83,22 +87,18 @@ export function GameCanvas({
 
     return () => {
       isMounted = false;
-      // Cleanup handled in separate effect
     };
-  }, [onNodeClick]);
+  }, []); // Empty deps - only run once
 
-  // Cleanup sceneManager on unmount or when it changes
+  // Cleanup on unmount only
   useEffect(() => {
     return () => {
-      if (sceneManager) {
-        sceneManager.destroy();
-      }
       if (appRef.current) {
         appRef.current.destroy(true);
         appRef.current = null;
       }
     };
-  }, [sceneManager]);
+  }, []);
 
   // Handle window resize
   useEffect(() => {
