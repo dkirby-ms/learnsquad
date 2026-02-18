@@ -101,8 +101,8 @@ export class SceneManager {
     this.connectionGraphics = new PIXI.Graphics();
     this.connectionsLayer.addChild(this.connectionGraphics);
 
-    // Center viewport on initial load
-    this.viewport.moveCenter(1000, 1000);
+    // Center viewport on game area (nodes are positioned around 200-700 range)
+    this.viewport.moveCenter(450, 350);
   }
 
   /**
