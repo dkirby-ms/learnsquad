@@ -174,12 +174,9 @@ export class SceneManager {
     ring.visible = false;
 
     // Label
-    const label = new PIXI.Text({
-      text: node.name,
-      style: {
-        fontSize: 12,
-        fill: 0xe8eaed,
-      },
+    const label = new PIXI.Text(node.name, {
+      fontSize: 12,
+      fill: 0xe8eaed,
     });
     label.anchor.set(0.5);
     label.y = LABEL_OFFSET_Y;
@@ -221,16 +218,17 @@ export class SceneManager {
       }
     }
 
-    circle.circle(0, 0, NODE_RADIUS);
-    circle.fill({ color: fillColor });
+    circle.beginFill(fillColor);
+    circle.drawCircle(0, 0, NODE_RADIUS);
+    circle.endFill();
 
     // Update selection ring
     const isSelected = this.selectedNodeId === node.id;
     ring.visible = isSelected;
     if (isSelected) {
       ring.clear();
-      ring.circle(0, 0, NODE_RADIUS + 5);
-      ring.stroke({ width: NODE_SELECTION_RING_WIDTH, color: COLORS.selectedRing });
+      ring.lineStyle(NODE_SELECTION_RING_WIDTH, COLORS.selectedRing);
+      ring.drawCircle(0, 0, NODE_RADIUS + 5);
     }
 
     // Update label
@@ -255,9 +253,9 @@ export class SceneManager {
       if (!fromNode || !toNode) continue;
 
       // Draw line between nodes
+      this.connectionGraphics.lineStyle(CONNECTION_WIDTH, COLORS.connection);
       this.connectionGraphics.moveTo(fromNode.position.x, fromNode.position.y);
       this.connectionGraphics.lineTo(toNode.position.x, toNode.position.y);
-      this.connectionGraphics.stroke({ width: CONNECTION_WIDTH, color: COLORS.connection });
     }
   }
 

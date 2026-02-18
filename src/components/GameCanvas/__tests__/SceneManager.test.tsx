@@ -16,17 +16,19 @@ jest.mock('pixi.js', () => {
   const MockGraphics = jest.fn().mockImplementation(function() {
     return {
       clear: jest.fn().mockReturnThis(),
-      circle: jest.fn().mockReturnThis(),
-      fill: jest.fn().mockReturnThis(),
-      stroke: jest.fn().mockReturnThis(),
+      // v7 API
+      beginFill: jest.fn().mockReturnThis(),
+      drawCircle: jest.fn().mockReturnThis(),
+      endFill: jest.fn().mockReturnThis(),
+      lineStyle: jest.fn().mockReturnThis(),
       moveTo: jest.fn().mockReturnThis(),
       lineTo: jest.fn().mockReturnThis(),
     };
   });
 
-  const MockText = jest.fn().mockImplementation(function(options: any) {
+  const MockText = jest.fn().mockImplementation(function(text: string, style?: any) {
     return {
-      text: options?.text || '',
+      text: text || '',
       anchor: { set: jest.fn() },
       x: 0,
       y: 0,
